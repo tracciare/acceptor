@@ -34,12 +34,13 @@ public class TracciaReFunctionalTest {
                 response -> {
                     context.assertEquals(200, response.statusCode());
                     response.handler(body -> {
-                        context.assertEquals("<html><body>hello!! magic jhonson</body></html>",
+                        context.assertEquals("<html><body>Hello!! I'm Tracciare!</body></html>",
                                 body.toString().replaceAll("\n", ""));
                         async.complete();
                     });
                 });
     }
+
 
 
 }
