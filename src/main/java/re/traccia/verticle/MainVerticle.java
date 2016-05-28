@@ -55,7 +55,7 @@ public class MainVerticle extends AbstractVerticle {
 
     }
 
-    private static JsonObject mongoConfig() {
+    public static JsonObject mongoConfig() {
         JsonObject config = new JsonObject();
         config.put("host", MONGO_HOST);
         config.put("port", MONGO_PORT);

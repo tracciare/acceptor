@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_66.jdk/Contents/Home/
 tag=tracciare/acceptor:1.0-SNAPSHOT
 name=acceptor
 
@@ -13,7 +12,7 @@ function print_msg {
     echo $delimiter
 }
 
-print_msg 'Building $name Vertx fat jar ...'
+print_msg 'Building fat jar ...'
 mvn clean package -Dmaven.test.skip=true
 
 print_msg 'Building $name Docker image ...'
@@ -21,10 +20,8 @@ docker-compose stop $name
 yes | docker-compose rm
 docker-compose build $name
 
-print_msg "Running trace-repo and Mongo Docker containers: service will be available at http://$host:8080 ..."
+print_msg "Running acceptor service and Mongo Docker containers ..."
 docker-compose up -d
 
-# print_msg 'Building trace-repo Docker image ...'
 # docker build -t $tag .
-# print_msg "Running trace-repo Docker container: service will be available at http://$host:8080 ..."
 # docker run -t -i -p $port:$port $tag

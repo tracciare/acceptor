@@ -19,9 +19,6 @@ import re.traccia.repository.TracesRepository;
 import static re.traccia.management.AppConstants.TRACES_PATH;
 
 
-/**
- * Created by fiorenzo on 28/05/16.
- */
 public class TracesService extends AbstractVerticle {
 
     private final static Logger logger = LoggerFactory.getLogger(TracesService.class);
@@ -39,7 +36,7 @@ public class TracesService extends AbstractVerticle {
     @Override
     public void start(Future<Void> startFuture) throws Exception {
         logger.info("start tracesService");
-        startWebApp((start) -> {
+        startWebApp(start -> {
             if (start.succeeded()) {
                 completeStartup(start, startFuture);
             } else {
