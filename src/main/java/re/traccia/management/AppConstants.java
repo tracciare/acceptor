@@ -28,4 +28,11 @@ public class AppConstants {
     public static final String OPENALPR_CONF_PATH = "openalpr.conf";
     public static final String OPENALPR_COUNTRY = "eu";
     public static final String OPENALPR_RUNTIME_DIR = "/usr/share/openalpr/runtime_data";
+
+    //msg queues
+    public static final String ALPR_QUEUE = "re.traccia.alpr";
+    public static final String PARKINGSLOTS_QUEUE = "re.traccia.parkingslots";
+    public static final String TRACES_QUEUE = "re.traccia.traces";
+    public static final String USERS_QUEUE = "re.traccia.users";
+
 }

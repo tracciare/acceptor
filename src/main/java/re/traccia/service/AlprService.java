@@ -7,6 +7,7 @@ import com.openalpr.jni.AlprResults;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
@@ -33,7 +34,8 @@ public class AlprService extends AbstractVerticle {
         this.tracesRepository = new TracesRepository(mongoClient);
         this.alpr = new Alpr(OPENALPR_COUNTRY, OPENALPR_CONF_PATH, OPENALPR_RUNTIME_DIR);
         this.vertx = vertx;
-        getVertx().eventBus().consumer("re.traccia.alpr", this::consume);
+        MessageConsumer<String> consumer = getVertx().eventBus().consumer(ALPR_QUEUE);
+        consumer.handler(this::consume);
     }
 
     private <T> void consume(Message<T> message) {
@@ -93,7 +95,7 @@ public class AlprService extends AbstractVerticle {
                 if (fsResult.succeeded()) {
                     logger.info("OK");
                     // Set top N candidates returned to 20
-                    alpr.setTopN(20);
+                    alpr.setTopN(5);
                     // Set pattern to Maryland
                     //        alpr.setDefaultRegion("md");
 
@@ -101,10 +103,9 @@ public class AlprService extends AbstractVerticle {
                     for (AlprPlateResult single : results.getPlates()) {
                         for (AlprPlate plate : single.getTopNPlates()) {
                             if (plate.isMatchesTemplate())
-                                logger.info("  * ");
+                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " * ");
                             else
-                                logger.info("  - ");
-                            logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence());
+                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " - ");
                         }
                     }
                     // Make sure to call this to release memory

@@ -3,6 +3,7 @@ package re.traccia.service;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -15,7 +16,9 @@ import re.traccia.model.Trace;
 import re.traccia.common.Repository;
 import re.traccia.repository.TracesRepository;
 
+import static re.traccia.management.AppConstants.ALPR_QUEUE;
 import static re.traccia.management.AppConstants.TRACES_PATH;
+import static re.traccia.management.AppConstants.TRACES_QUEUE;
 
 
 public class TracesService extends AbstractVerticle {
@@ -31,7 +34,8 @@ public class TracesService extends AbstractVerticle {
         this.router = router;
         this.repository = new TracesRepository(mongoClient);
         this.vertx = vertx;
-        getVertx().eventBus().consumer("re.traccia.traces", this::consume);
+        MessageConsumer<String> consumer = getVertx().eventBus().consumer(TRACES_QUEUE);
+        consumer.handler(this::consume);
     }
 
     private <T> void consume(Message<T> message) {
@@ -86,8 +90,18 @@ public class TracesService extends AbstractVerticle {
                             end404(routingContext, single.cause().getMessage());
                             return;
                         }
-                        getVertx().eventBus().send("news.uk.alpr",
-                                single.result());
+                        getVertx().eventBus().send(ALPR_QUEUE,
+                                "" + single.result(), ar -> {
+                                    logger.info("WE SENT MESSAGE!!!");
+                                    if (ar.succeeded()) {
+                                        System.out.println("Received reply: " + ar.result().body());
+                                    } else {
+                                        if (ar.failed()) {
+                                            logger.info("ERROR: " + ar.cause());
+                                        }
+                                    }
+
+                                });
                         routingContext.response()
                                 .setStatusCode(200)
                                 .putHeader("content-type",

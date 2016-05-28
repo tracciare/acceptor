@@ -2,6 +2,7 @@ package re.traccia.service;
 
 import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -13,6 +14,7 @@ import io.vertx.ext.web.RoutingContext;
 import re.traccia.repository.ParkingSlotsRepository;
 import re.traccia.common.Repository;
 
+import static re.traccia.management.AppConstants.PARKINGSLOTS_QUEUE;
 import static re.traccia.management.AppConstants.PARKING_SLOTS_PATH;
 
 /**
@@ -27,7 +29,8 @@ public class ParkingSlotsService extends AbstractVerticle {
         this.router = router;
         this.repository = new ParkingSlotsRepository(mongoClient);
         this.vertx = vertx;
-        getVertx().eventBus().consumer("re.traccia.parkingslots", this::consume);
+        MessageConsumer<String> consumer = getVertx().eventBus().consumer(PARKINGSLOTS_QUEUE);
+        consumer.handler(this::consume);
     }
 
     private <T> void consume(Message<T> message) {
