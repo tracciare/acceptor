@@ -20,9 +20,7 @@ import re.traccia.repository.TracesRepository;
 
 import static re.traccia.management.AppConstants.*;
 
-/**
- * Created by fiorenzo on 28/05/16.
- */
+
 public class AlprService extends AbstractVerticle {
 
     private final static Logger logger = LoggerFactory.getLogger(AlprService.class);

@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-mongo $(docker-machine ip)
+mongo $(docker-machine ip)/traces-db

@@ -92,7 +92,7 @@ public class TracesService extends AbstractVerticle {
                                 .setStatusCode(200)
                                 .putHeader("content-type",
                                         "application/json; charset=utf-8")
-                                .end(Json.encodePrettily(created.result()));
+                                .end(Json.encodePrettily(new JsonObject().put("_id", single.result())));
                     });
                 }
         );
@@ -170,7 +170,7 @@ public class TracesService extends AbstractVerticle {
                         return;
                     }
                     routingContext.response()
-                            .setStatusCode(204).end();
+                            .setStatusCode(200).end();
                 }
         );
 

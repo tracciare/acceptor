@@ -7,9 +7,7 @@ import io.vertx.ext.mongo.MongoClient;
 
 import java.util.List;
 
-/**
- * Created by fiorenzo on 28/05/16.
- */
+
 public class AbstractRepository implements Repository {
 
     private String collection;
@@ -45,7 +43,7 @@ public class AbstractRepository implements Repository {
 
     public void update(String id, JsonObject jsonObject, Handler<AsyncResult<Void>> handler) {
         JsonObject query = new JsonObject();
-        query.put("id", id);
+        query.put("_id", id);
         JsonObject updateQuery = new JsonObject();
         updateQuery.put("$set", jsonObject);
         mongoClient.update(getCollection(), query, updateQuery, handler);
@@ -53,7 +51,7 @@ public class AbstractRepository implements Repository {
 
     public void delete(String id, Handler<AsyncResult<Void>> handler) {
         JsonObject query = new JsonObject();
-        query.put("id", id);
+        query.put("_id", id);
         mongoClient.removeOne(getCollection(), query, handler);
     }
 
