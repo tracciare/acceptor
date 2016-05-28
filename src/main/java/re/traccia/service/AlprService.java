@@ -97,7 +97,7 @@ public class AlprService extends AbstractVerticle {
                 if (fsResult.succeeded()) {
                     logger.info("OK");
                     // Set top N candidates returned to 20
-                    alpr.setTopN(20);
+                    alpr.setTopN(5);
                     // Set pattern to Maryland
                     //        alpr.setDefaultRegion("md");
 
@@ -105,10 +105,9 @@ public class AlprService extends AbstractVerticle {
                     for (AlprPlateResult single : results.getPlates()) {
                         for (AlprPlate plate : single.getTopNPlates()) {
                             if (plate.isMatchesTemplate())
-                                logger.info("  * ");
+                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " * ");
                             else
-                                logger.info("  - ");
-                            logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence());
+                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " - ");
                         }
                     }
                     // Make sure to call this to release memory
