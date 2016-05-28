@@ -1,0 +1,10 @@
+mongo:
+  image: mongo:3.0.4
+  restart: always
+  ports:
+    - "27017:27017"
+acceptor:
+  build: .
+  restart: always
+  ports:
+    - "8080:8080"

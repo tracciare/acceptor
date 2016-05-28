@@ -13,6 +13,13 @@ public class Trace {
     public Trace() {
     }
 
+    public Trace(String lat, String lon, byte[] image, String plateNumber) {
+        this.lat = lat;
+        this.lon = lon;
+        this.image = image;
+        this.plateNumber = plateNumber;
+    }
+
     public String getId() {
         return id;
     }
