@@ -16,8 +16,10 @@ public class AlprResults {
 
     private List<AlprRegionOfInterest> regionsOfInterest;
 
+    private JsonObject jobj;
+
     AlprResults(String json) {
-        JsonObject jobj = new JsonObject(json);
+        jobj = new JsonObject(json);
 
         epoch_time = jobj.getLong("epoch_time");
         img_width = jobj.getInteger("img_width");
@@ -63,5 +65,13 @@ public class AlprResults {
 
     public List<AlprRegionOfInterest> getRegionsOfInterest() {
         return regionsOfInterest;
+    }
+
+    public JsonObject getJobj() {
+        return jobj;
+    }
+
+    public void setJobj(JsonObject jobj) {
+        this.jobj = jobj;
     }
 }

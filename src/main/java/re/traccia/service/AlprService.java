@@ -11,6 +11,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -44,7 +45,7 @@ public class AlprService extends AbstractVerticle {
             if (start.succeeded()) {
                 completeStartup(start, startFuture);
             } else {
-                System.out.println("error - startWebApp: " + start.cause().getMessage());
+                logger.info("error - startWebApp: " + start.cause().getMessage());
             }
         });
     }
@@ -76,38 +77,46 @@ public class AlprService extends AbstractVerticle {
             FileSystem fs = vertx.fileSystem();
             fs.writeFile(tmpImage, Buffer.buffer().appendBytes(imgObj.getBinary("img")), fsResult -> {
                 if (fsResult.succeeded()) {
-                    System.out.println("OK");
+                    logger.info("OK");
                     // Set top N candidates returned to 20
                     alpr.setTopN(20);
                     // Set pattern to Maryland
                     //        alpr.setDefaultRegion("md");
 
                     AlprResults results = alpr.recognize(tmpImage);
-                    System.out.format("  %-15s%-8s\n", "Plate Number", "Confidence");
                     for (AlprPlateResult single : results.getPlates()) {
                         for (AlprPlate plate : single.getTopNPlates()) {
                             if (plate.isMatchesTemplate())
-                                System.out.print("  * ");
+                                logger.info("  * ");
                             else
-                                System.out.print("  - ");
-                            System.out.format("%-15s%-8f\n", plate.getCharacters(), plate.getOverallConfidence());
+                                logger.info("  - ");
+                            logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence());
                         }
                     }
                     // Make sure to call this to release memory
-                    alpr.unload();
                     fs.delete(tmpImage, delete -> {
                         if (delete.succeeded()) {
-                            System.out.println("OK deleted");
+                            logger.info("OK deleted");
                         } else
-                            System.out.print(" NO DELETE - ");
+                            logger.error(" NO DELETE - ");
                     });
+                    routingContext.response()
+                            .setStatusCode(201)
+                            .putHeader("content-type",
+                                    "application/json; charset=utf-8")
+                            .end(Json.encodePrettily(results.getJobj()));
                 } else {
-                    System.err.println("Oh oh ..." + fsResult.cause());
+                    logger.error("Oh oh ..." + fsResult.cause());
                 }
             });
         });
 
 
+    }
+
+    @Override
+    public void stop(Future<Void> stopFuture) throws Exception {
+        alpr.unload();
     }
 
     private void end404(RoutingContext routingContext, String msg) {
