@@ -82,3 +82,5 @@ hs_err_pid*
 .idea
 acceptor.iml
 
+file-uploads/
+target/
