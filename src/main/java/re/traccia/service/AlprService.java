@@ -75,7 +75,7 @@ public class AlprService extends AbstractVerticle {
             return;
         }
         String tmpImage = "/tmp/" + id + ".jpg";
-        mongoRepository.getImg(id, result -> {
+        mongoRepository.image(id, result -> {
             JsonObject imgObj = result.result();
             FileSystem fs = vertx.fileSystem();
             fs.writeFile(tmpImage, Buffer.buffer().appendBytes(imgObj.getBinary("img")), fsResult -> {

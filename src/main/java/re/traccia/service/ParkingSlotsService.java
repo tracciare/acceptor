@@ -12,7 +12,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import re.traccia.repository.MongoRepository;
+import re.traccia.repository.ParkingSlotsRepository;
+import re.traccia.common.Repository;
 
 import static re.traccia.management.AppConstants.PARKING_SLOTS_PATH;
 
@@ -21,12 +22,12 @@ import static re.traccia.management.AppConstants.PARKING_SLOTS_PATH;
  */
 public class ParkingSlotsService extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(TracesService.class);
-    private MongoRepository mongoRepository;
+    private Repository repository;
     private Router router;
 
     public ParkingSlotsService(Router router, MongoClient mongoClient) {
         this.router = router;
-        this.mongoRepository = new MongoRepository(mongoClient);
+        this.repository = new ParkingSlotsRepository(mongoClient);
     }
 
     public ParkingSlotsService() {
@@ -64,7 +65,7 @@ public class ParkingSlotsService extends AbstractVerticle {
 
     private void create(RoutingContext routingContext) {
         JsonObject jsonObject = routingContext.getBodyAsJson();
-        mongoRepository.create(jsonObject, single -> {
+        this.repository.create(jsonObject, single -> {
             if (single.failed()) {
                 end404(routingContext, single.cause().getMessage());
                 return;
@@ -85,7 +86,7 @@ public class ParkingSlotsService extends AbstractVerticle {
             end404(routingContext, "no id");
             return;
         }
-        mongoRepository.fetch(id, result -> {
+        this.repository.fetch(id, result -> {
             if (result.failed()) {
                 end404(routingContext, result.cause().getMessage());
                 return;
@@ -104,7 +105,7 @@ public class ParkingSlotsService extends AbstractVerticle {
             end404(routingContext, "no id");
             return;
         }
-        mongoRepository.update(id, routingContext.getBodyAsJson(),
+        this.repository.update(id, routingContext.getBodyAsJson(),
                 updated -> {
                     if (updated.failed()) {
                         end404(routingContext, updated.cause().getMessage());
@@ -124,7 +125,7 @@ public class ParkingSlotsService extends AbstractVerticle {
             end404(routingContext, "no id");
             return;
         }
-        mongoRepository.delete(id,
+        this.repository.delete(id,
                 deleted -> {
                     if (deleted.failed()) {
                         end404(routingContext, deleted.cause().getMessage());
@@ -138,7 +139,7 @@ public class ParkingSlotsService extends AbstractVerticle {
     }
 
     private void getList(RoutingContext routingContext) {
-        mongoRepository.list(new JsonObject(),
+        this.repository.list(new JsonObject(),
                 list -> {
                     if (list.failed()) {
                         end404(routingContext, list.cause().getMessage());

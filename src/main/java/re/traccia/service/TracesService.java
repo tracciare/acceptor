@@ -13,8 +13,8 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import re.traccia.model.Trace;
-import re.traccia.repository.MongoRepository;
-import re.traccia.utils.TraceUtils;
+import re.traccia.common.Repository;
+import re.traccia.repository.TracesRepository;
 
 import static re.traccia.management.AppConstants.TRACES_PATH;
 
@@ -25,7 +25,7 @@ import static re.traccia.management.AppConstants.TRACES_PATH;
 public class TracesService extends AbstractVerticle {
 
     private final static Logger logger = LoggerFactory.getLogger(TracesService.class);
-    private MongoRepository mongoRepository;
+    private Repository repository;
     private Router router;
 
     public TracesService() {
@@ -33,7 +33,7 @@ public class TracesService extends AbstractVerticle {
 
     public TracesService(Router router, MongoClient mongoClient) {
         this.router = router;
-        this.mongoRepository = new MongoRepository(mongoClient);
+        this.repository = new TracesRepository(mongoClient);
     }
 
     @Override
@@ -74,23 +74,12 @@ public class TracesService extends AbstractVerticle {
                         Trace.class);
         byte[] img = trace.getImage();
         trace.setImage(null);
-        mongoRepository.create(trace.toJson(), single -> {
+        this.repository.create(trace.toJson(), single -> {
                     if (single.failed()) {
                         end404(routingContext, single.cause().getMessage());
                         return;
                     }
                     logger.info("_id: " + single.result());
-                    mongoRepository.createImg(img, single.result(), image -> {
-                        if (image.failed()) {
-                            end404(routingContext, image.cause().getMessage());
-                            return;
-                        }
-                        routingContext.response()
-                                .setStatusCode(201)
-                                .putHeader("content-type",
-                                        "application/json; charset=utf-8")
-                                .end(Json.encodePrettily(single.result()));
-                    });
                 }
         );
 
@@ -102,7 +91,7 @@ public class TracesService extends AbstractVerticle {
             end404(routingContext, "no id");
             return;
         }
-        mongoRepository.fetch(id, result -> {
+        this.repository.fetch(id, result -> {
             if (result.failed()) {
                 end404(routingContext, result.cause().getMessage());
                 return;
@@ -121,7 +110,7 @@ public class TracesService extends AbstractVerticle {
             end404(routingContext, "no id");
             return;
         }
-        mongoRepository.getImg(id, result -> {
+        ((TracesRepository) repository).image(id, result -> {
             if (result.failed()) {
                 end404(routingContext, result.cause().getMessage());
                 return;
@@ -140,7 +129,7 @@ public class TracesService extends AbstractVerticle {
             end404(routingContext, "no id");
             return;
         }
-        mongoRepository.update(id, routingContext.getBodyAsJson(),
+        this.repository.update(id, routingContext.getBodyAsJson(),
                 updated -> {
                     if (updated.failed()) {
                         end404(routingContext, updated.cause().getMessage());
@@ -160,7 +149,7 @@ public class TracesService extends AbstractVerticle {
             end404(routingContext, "no id");
             return;
         }
-        mongoRepository.delete(id,
+        this.repository.delete(id,
                 deleted -> {
                     if (deleted.failed()) {
                         end404(routingContext, deleted.cause().getMessage());
@@ -174,7 +163,7 @@ public class TracesService extends AbstractVerticle {
     }
 
     private void getList(RoutingContext routingContext) {
-        mongoRepository.list(new JsonObject(),
+        this.repository.list(new JsonObject(),
                 list -> {
                     if (list.failed()) {
                         end404(routingContext, list.cause().getMessage());
