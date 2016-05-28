@@ -1,9 +1,7 @@
 package re.traccia.service;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -25,9 +23,15 @@ public class ParkingSlotsService extends AbstractVerticle {
     private Repository repository;
     private Router router;
 
-    public ParkingSlotsService(Router router, MongoClient mongoClient) {
+    public ParkingSlotsService(Router router, MongoClient mongoClient, Vertx vertx) {
         this.router = router;
         this.repository = new ParkingSlotsRepository(mongoClient);
+        this.vertx = vertx;
+        getVertx().eventBus().consumer("re.traccia.parkingslots", this::consume);
+    }
+
+    private <T> void consume(Message<T> message) {
+        logger.info("received msg: " + message.body());
     }
 
     public ParkingSlotsService() {

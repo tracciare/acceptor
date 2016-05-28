@@ -4,11 +4,9 @@ import com.openalpr.jni.Alpr;
 import com.openalpr.jni.AlprPlate;
 import com.openalpr.jni.AlprPlateResult;
 import com.openalpr.jni.AlprResults;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
@@ -32,10 +30,25 @@ public class AlprService extends AbstractVerticle {
     private Router router;
     private Alpr alpr;
 
-    public AlprService(Router router, MongoClient mongoClient) {
+    public AlprService(Router router, MongoClient mongoClient, Vertx vertx) {
         this.router = router;
         this.tracesRepository = new TracesRepository(mongoClient);
         this.alpr = new Alpr(OPENALPR_COUNTRY, OPENALPR_CONF_PATH, OPENALPR_RUNTIME_DIR);
+        this.vertx = vertx;
+        getVertx().eventBus().consumer("re.traccia.alpr", this::consume);
+    }
+
+    private <T> void consume(Message<T> message) {
+        logger.info("received msg: " + message.body());
+        String id = (String) message.body();
+        this.tracesRepository.fetch(id, result -> {
+            if (result.succeeded()) {
+                logger.info(result.result());
+            } else {
+                logger.info("error - fecth trace: " + result.cause().getMessage());
+            }
+
+        });
     }
 
     public AlprService() {

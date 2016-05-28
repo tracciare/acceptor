@@ -1,9 +1,8 @@
 package re.traccia.service;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -28,10 +27,17 @@ public class TracesService extends AbstractVerticle {
     public TracesService() {
     }
 
-    public TracesService(Router router, MongoClient mongoClient) {
+    public TracesService(Router router, MongoClient mongoClient, Vertx vertx) {
         this.router = router;
         this.repository = new TracesRepository(mongoClient);
+        this.vertx = vertx;
+        getVertx().eventBus().consumer("re.traccia.traces", this::consume);
     }
+
+    private <T> void consume(Message<T> message) {
+        logger.info("received msg: " + message.body());
+    }
+
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -80,6 +86,8 @@ public class TracesService extends AbstractVerticle {
                             end404(routingContext, single.cause().getMessage());
                             return;
                         }
+                        getVertx().eventBus().send("news.uk.alpr",
+                                single.result());
                         routingContext.response()
                                 .setStatusCode(200)
                                 .putHeader("content-type",

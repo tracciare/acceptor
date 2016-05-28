@@ -38,10 +38,10 @@ public class MainVerticle extends AbstractVerticle {
         router.route("/").handler(StaticHandler.create("assets"));
         router.route("/api*").handler(BodyHandler.create());
 
-        AlprService alprService = new AlprService(router, this.mongoClient);
-        ParkingSlotsService parkingSlotsService = new ParkingSlotsService(router, this.mongoClient);
-        TracesService tracesService = new TracesService(router, this.mongoClient);
-        UsersService usersService = new UsersService(router, this.mongoClient);
+        AlprService alprService = new AlprService(router, this.mongoClient, vertx);
+        ParkingSlotsService parkingSlotsService = new ParkingSlotsService(router, this.mongoClient, vertx);
+        TracesService tracesService = new TracesService(router, this.mongoClient, vertx);
+        UsersService usersService = new UsersService(router, this.mongoClient, vertx);
         vertx.deployVerticle(alprService, new DeploymentOptions().setWorker(true));
 
         vertx.deployVerticle(parkingSlotsService, new DeploymentOptions().setConfig(config()));

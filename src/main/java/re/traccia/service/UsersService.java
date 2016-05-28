@@ -1,9 +1,7 @@
 package re.traccia.service;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -25,9 +23,15 @@ public class UsersService extends AbstractVerticle {
     private Repository repository;
     private Router router;
 
-    public UsersService(Router router, MongoClient mongoClient) {
+    public UsersService(Router router, MongoClient mongoClient, Vertx vertx) {
         this.router = router;
         this.repository = new UsersRepository(mongoClient);
+        this.vertx = vertx;
+        getVertx().eventBus().consumer("re.traccia.users", this::consume);
+    }
+
+    private <T> void consume(Message<T> message) {
+        logger.info("received msg: " + message.body());
     }
 
     public UsersService() {
