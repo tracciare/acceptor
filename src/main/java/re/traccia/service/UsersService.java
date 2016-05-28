@@ -12,28 +12,24 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import re.traccia.model.Trace;
 import re.traccia.repository.MongoRepository;
-import re.traccia.utils.TraceUtils;
 
-import static re.traccia.management.AppConstants.TRACES_PATH;
-
+import static re.traccia.management.AppConstants.USERS_PATH;
 
 /**
  * Created by fiorenzo on 28/05/16.
  */
-public class TracesService extends AbstractVerticle {
-
+public class UsersService extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(TracesService.class);
     private MongoRepository mongoRepository;
     private Router router;
 
-    public TracesService() {
-    }
-
-    public TracesService(Router router, MongoClient mongoClient) {
+    public UsersService(Router router, MongoClient mongoClient) {
         this.router = router;
         this.mongoRepository = new MongoRepository(mongoClient);
+    }
+
+    public UsersService() {
     }
 
     @Override
@@ -58,41 +54,28 @@ public class TracesService extends AbstractVerticle {
     }
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
-        router.get(TRACES_PATH).handler(this::getList);
-        router.post(TRACES_PATH).handler(this::create);
-        router.get(TRACES_PATH + ":id").handler(this::fetch);
-        router.get(TRACES_PATH + ":id/image").handler(this::getImage);
-        router.put(TRACES_PATH + ":id").handler(this::update);
-        router.delete(TRACES_PATH + ":id").handler(this::delete);
+        router.get(USERS_PATH).handler(this::getList);
+        router.post(USERS_PATH).handler(this::create);
+        router.get(USERS_PATH + ":id").handler(this::fetch);
+        router.put(USERS_PATH + ":id").handler(this::update);
+        router.delete(USERS_PATH + ":id").handler(this::delete);
         next.handle(Future.succeededFuture());
     }
 
     private void create(RoutingContext routingContext) {
         JsonObject jsonObject = routingContext.getBodyAsJson();
-        Trace trace =
-                Json.decodeValue(routingContext.getBodyAsString(),
-                        Trace.class);
-        byte[] img = trace.getImage();
-        trace.setImage(null);
-        mongoRepository.create(trace.toJson(), single -> {
-                    if (single.failed()) {
-                        end404(routingContext, single.cause().getMessage());
-                        return;
-                    }
-                    logger.info("_id: " + single.result());
-                    mongoRepository.createImg(img, single.result(), image -> {
-                        if (image.failed()) {
-                            end404(routingContext, image.cause().getMessage());
-                            return;
-                        }
-                        routingContext.response()
-                                .setStatusCode(201)
-                                .putHeader("content-type",
-                                        "application/json; charset=utf-8")
-                                .end(Json.encodePrettily(single.result()));
-                    });
-                }
-        );
+        mongoRepository.create(jsonObject, single -> {
+            if (single.failed()) {
+                end404(routingContext, single.cause().getMessage());
+                return;
+            }
+            logger.info("_id: " + single.result());
+            routingContext.response()
+                    .setStatusCode(201)
+                    .putHeader("content-type",
+                            "application/json; charset=utf-8")
+                    .end(Json.encodePrettily(single.result()));
+        });
 
     }
 
@@ -103,25 +86,6 @@ public class TracesService extends AbstractVerticle {
             return;
         }
         mongoRepository.fetch(id, result -> {
-            if (result.failed()) {
-                end404(routingContext, result.cause().getMessage());
-                return;
-            }
-            routingContext.response()
-                    .setStatusCode(200)
-                    .putHeader("content-type",
-                            "application/json; charset=utf-8")
-                    .end(Json.encodePrettily(result.result()));
-        });
-    }
-
-    private void getImage(RoutingContext routingContext) {
-        String id = routingContext.request().getParam("id");
-        if (id == null) {
-            end404(routingContext, "no id");
-            return;
-        }
-        mongoRepository.getImg(id, result -> {
             if (result.failed()) {
                 end404(routingContext, result.cause().getMessage());
                 return;
@@ -194,7 +158,5 @@ public class TracesService extends AbstractVerticle {
                 .end();
     }
 
-
 }
-
 

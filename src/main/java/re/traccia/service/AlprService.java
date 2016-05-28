@@ -38,6 +38,9 @@ public class AlprService extends AbstractVerticle {
         this.alpr = new Alpr(OPENALPR_COUNTRY, OPENALPR_CONF_PATH, OPENALPR_RUNTIME_DIR);
     }
 
+    public AlprService() {
+    }
+
     @Override
     public void start(Future<Void> startFuture) throws Exception {
         logger.info("start tracesService");

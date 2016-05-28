@@ -7,6 +7,8 @@ public class AppConstants {
 
     public static final String APP_CONTEST = "/api/";
     public static final String TRACES_PATH = APP_CONTEST + "traces/";
+    public static final String USERS_PATH = APP_CONTEST + "users/";
+    public static final String PARKING_SLOTS_PATH = APP_CONTEST + "parkingslots/";
     public static final String ALPR_PATH = APP_CONTEST + "alpr/";
 
     public static final int MONGO_PORT = 27017;
