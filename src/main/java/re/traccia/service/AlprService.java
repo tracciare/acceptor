@@ -18,7 +18,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import re.traccia.repository.MongoRepository;
+import re.traccia.repository.TracesRepository;
 
 import static re.traccia.management.AppConstants.*;
 
@@ -28,13 +28,13 @@ import static re.traccia.management.AppConstants.*;
 public class AlprService extends AbstractVerticle {
 
     private final static Logger logger = LoggerFactory.getLogger(TracesService.class);
-    private MongoRepository mongoRepository;
+    private TracesRepository tracesRepository;
     private Router router;
     private Alpr alpr;
 
     public AlprService(Router router, MongoClient mongoClient) {
         this.router = router;
-        this.mongoRepository = new MongoRepository(mongoClient);
+        this.tracesRepository = new TracesRepository(mongoClient);
         this.alpr = new Alpr(OPENALPR_COUNTRY, OPENALPR_CONF_PATH, OPENALPR_RUNTIME_DIR);
     }
 
@@ -75,7 +75,7 @@ public class AlprService extends AbstractVerticle {
             return;
         }
         String tmpImage = "/tmp/" + id + ".jpg";
-        mongoRepository.image(id, result -> {
+        tracesRepository.image(id, result -> {
             JsonObject imgObj = result.result();
             FileSystem fs = vertx.fileSystem();
             fs.writeFile(tmpImage, Buffer.buffer().appendBytes(imgObj.getBinary("img")), fsResult -> {
