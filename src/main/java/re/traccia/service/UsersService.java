@@ -21,7 +21,7 @@ import static re.traccia.management.AppConstants.USERS_PATH;
  * Created by fiorenzo on 28/05/16.
  */
 public class UsersService extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(TracesService.class);
+    private final static Logger logger = LoggerFactory.getLogger(UsersService.class);
     private Repository repository;
     private Router router;
 
@@ -35,7 +35,7 @@ public class UsersService extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
-        logger.info("start tracesService");
+        logger.info("start UsersService");
         startWebApp((start) -> {
             if (start.succeeded()) {
                 completeStartup(start, startFuture);
@@ -47,7 +47,7 @@ public class UsersService extends AbstractVerticle {
 
     private void completeStartup(AsyncResult<HttpServer> http, Future<Void> fut) {
         if (http.succeeded()) {
-            logger.info("Application started");
+            logger.info("UsersService Application started");
             fut.complete();
         } else {
             fut.fail(http.cause());

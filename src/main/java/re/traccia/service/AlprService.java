@@ -27,7 +27,7 @@ import static re.traccia.management.AppConstants.*;
  */
 public class AlprService extends AbstractVerticle {
 
-    private final static Logger logger = LoggerFactory.getLogger(TracesService.class);
+    private final static Logger logger = LoggerFactory.getLogger(AlprService.class);
     private TracesRepository tracesRepository;
     private Router router;
     private Alpr alpr;
@@ -43,7 +43,7 @@ public class AlprService extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
-        logger.info("start tracesService");
+        logger.info("AlprService start tracesService");
         startWebApp((start) -> {
             if (start.succeeded()) {
                 completeStartup(start, startFuture);
@@ -55,7 +55,7 @@ public class AlprService extends AbstractVerticle {
 
     private void completeStartup(AsyncResult<HttpServer> http, Future<Void> fut) {
         if (http.succeeded()) {
-            logger.info("Application started");
+            logger.info("AlprService Application started");
             fut.complete();
         } else {
             fut.fail(http.cause());
@@ -119,6 +119,7 @@ public class AlprService extends AbstractVerticle {
 
     @Override
     public void stop(Future<Void> stopFuture) throws Exception {
+        logger.info("stop AlprService");
         alpr.unload();
     }
 

@@ -35,7 +35,7 @@ public class TracesService extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
-        logger.info("start tracesService");
+        logger.info("start TracesService");
         startWebApp(start -> {
             if (start.succeeded()) {
                 completeStartup(start, startFuture);
@@ -47,7 +47,7 @@ public class TracesService extends AbstractVerticle {
 
     private void completeStartup(AsyncResult<HttpServer> http, Future<Void> fut) {
         if (http.succeeded()) {
-            logger.info("Application started");
+            logger.info("TracesService Application started");
             fut.complete();
         } else {
             fut.fail(http.cause());
@@ -69,7 +69,6 @@ public class TracesService extends AbstractVerticle {
                 Json.decodeValue(routingContext.getBodyAsString(),
                         Trace.class);
         byte[] img = trace.getImage();
-        trace.setImage(null);
         this.repository.create(trace.toJson(), single -> {
                     if (single.failed()) {
                         end404(routingContext, single.cause().getMessage());

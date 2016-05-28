@@ -14,7 +14,7 @@ public class AppConstants {
     // mongodb collections
     public static final String PARKINGSLOTS = "parkingslots";
     public static final String TRACES = "traces";
-    public static final String USERS = "traces";
+    public static final String USERS = "users";
     public static final String IMAGES = "images";
 
     //rest path

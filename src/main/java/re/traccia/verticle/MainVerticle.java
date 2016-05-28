@@ -37,6 +37,7 @@ public class MainVerticle extends AbstractVerticle {
         mongoClient = MongoClient.createShared(vertx, mongoConfig(), "tracepool");
         router.route("/").handler(StaticHandler.create("assets"));
         router.route("/api*").handler(BodyHandler.create());
+
         AlprService alprService = new AlprService(router, this.mongoClient);
         ParkingSlotsService parkingSlotsService = new ParkingSlotsService(router, this.mongoClient);
         TracesService tracesService = new TracesService(router, this.mongoClient);
