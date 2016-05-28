@@ -7,6 +7,7 @@ import com.openalpr.jni.AlprResults;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
@@ -35,7 +36,8 @@ public class AlprService extends AbstractVerticle {
         this.tracesRepository = new TracesRepository(mongoClient);
         this.alpr = new Alpr(OPENALPR_COUNTRY, OPENALPR_CONF_PATH, OPENALPR_RUNTIME_DIR);
         this.vertx = vertx;
-        getVertx().eventBus().consumer("re.traccia.alpr", this::consume);
+        MessageConsumer<String> consumer = getVertx().eventBus().consumer(ALPR_QUEUE);
+        consumer.handler(this::consume);
     }
 
     private <T> void consume(Message<T> message) {

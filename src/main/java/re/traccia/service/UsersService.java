@@ -2,6 +2,7 @@ package re.traccia.service;
 
 import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -14,6 +15,7 @@ import re.traccia.common.Repository;
 import re.traccia.repository.UsersRepository;
 
 import static re.traccia.management.AppConstants.USERS_PATH;
+import static re.traccia.management.AppConstants.USERS_QUEUE;
 
 /**
  * Created by fiorenzo on 28/05/16.
@@ -27,7 +29,8 @@ public class UsersService extends AbstractVerticle {
         this.router = router;
         this.repository = new UsersRepository(mongoClient);
         this.vertx = vertx;
-        getVertx().eventBus().consumer("re.traccia.users", this::consume);
+        MessageConsumer<String> consumer = getVertx().eventBus().consumer(USERS_QUEUE);
+        consumer.handler(this::consume);
     }
 
     private <T> void consume(Message<T> message) {
