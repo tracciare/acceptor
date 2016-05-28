@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import re.traccia.management.AppConstants;
 
 import static com.jayway.restassured.RestAssured.get;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -25,19 +26,21 @@ public class MyRestIT {
     }
 
     @Test
-    public void checkThatWeCanRetrieveIndividualProduct() {
+    public void getList() {
         // Get the list of bottles, ensure it's a success and extract the first id.
-        final int id = get("/api/traces").then()
+        final int id = get(AppConstants.TRACES_PATH).then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .jsonPath().getInt("find { it.name=='Bowmore 15 Years Laimrig' }.id");
         // Now get the individual resource and check the content
-        get("/api/whiskies/" + id).then()
+        get(AppConstants.TRACES_PATH + id).then()
                 .assertThat()
                 .statusCode(200)
                 .body("name", equalTo("Bowmore 15 Years Laimrig"))
                 .body("origin", equalTo("Scotland, Islay"))
                 .body("id", equalTo(id));
     }
+
+
 }
