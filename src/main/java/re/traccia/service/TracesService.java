@@ -65,7 +65,6 @@ public class TracesService extends AbstractVerticle {
     }
 
     private void create(RoutingContext routingContext) {
-        JsonObject jsonObject = routingContext.getBodyAsJson();
         Trace trace =
                 Json.decodeValue(routingContext.getBodyAsString(),
                         Trace.class);
@@ -77,6 +76,17 @@ public class TracesService extends AbstractVerticle {
                         return;
                     }
                     logger.info("_id: " + single.result());
+                    ((TracesRepository) this.repository).createImage(img, single.result(), created -> {
+                        if (created.failed()) {
+                            end404(routingContext, single.cause().getMessage());
+                            return;
+                        }
+                        routingContext.response()
+                                .setStatusCode(200)
+                                .putHeader("content-type",
+                                        "application/json; charset=utf-8")
+                                .end(Json.encodePrettily(created.result()));
+                    });
                 }
         );
 
