@@ -11,20 +11,10 @@ import java.util.List;
  */
 public class TraceUtils {
 
-    public static JsonObject toJson(Trace trace) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.put("id", trace.getId())
-                .put("lat", trace.getLat())
-                .put("lon", trace.getLon())
-                .put("image", trace.getImage())
-                .put("plateNumber", trace.getPlateNumber());
-        return jsonObject;
-    }
-
     public JsonArray toJsonArray(List<Trace> traceList) {
         JsonArray jsonArray = new JsonArray();
         for (Trace trace : traceList) {
-            jsonArray.add(toJson(trace));
+            jsonArray.add(trace.toJson());
         }
         return jsonArray;
     }

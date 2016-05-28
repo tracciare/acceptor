@@ -23,29 +23,32 @@ public class MongoRepository {
 
     public void fetch(String id, Handler<AsyncResult<JsonObject>> handler) {
         JsonObject query = new JsonObject();
-        JsonObject fields = new JsonObject().put("id", "").put("lat", "").put("lon", "").put("plateNumber", "");
+        JsonObject fields = new JsonObject().put("id", 1).put("lat", 1).put("lon", 1).put("plateNumber", 1);
         query.put("_id", id);
-        mongoClient.findOne(AppConstants.TRACES, query, null, handler);
+        mongoClient.findOne(AppConstants.TRACES, query, fields, handler);
     }
 
     public void getImg(String id, Handler<AsyncResult<JsonObject>> handler) {
         JsonObject query = new JsonObject();
-        JsonObject fields = new JsonObject().put("image", "");
-        query.put("id", id);
-        mongoClient.findOne(AppConstants.TRACES, query, fields, handler);
+        query.put("_id", id);
+        mongoClient.findOne(AppConstants.IMAGES, query, null, handler);
     }
 
-    public void create(Trace trace, Handler<AsyncResult<String>> handler) {
-        JsonObject jsonObject = TraceUtils.toJson(trace);
+    public void create(JsonObject jsonObject, Handler<AsyncResult<String>> handler) {
         mongoClient.insert(AppConstants.TRACES, jsonObject, handler);
     }
 
+    public void createImg(byte[] img, String id, Handler<AsyncResult<String>> handler) {
+        JsonObject jsonObject = new JsonObject().put("_id", id).put("img", img);
+        mongoClient.insert(AppConstants.IMAGES, jsonObject, handler);
+    }
 
-    public void update(String id, Trace trace, Handler<AsyncResult<Void>> handler) {
+
+    public void update(String id, JsonObject jsonObject, Handler<AsyncResult<Void>> handler) {
         JsonObject query = new JsonObject();
         query.put("id", id);
         JsonObject updateQuery = new JsonObject();
-        updateQuery.put("$set", TraceUtils.toJson(trace));
+        updateQuery.put("$set", jsonObject);
         mongoClient.update(AppConstants.TRACES, query, updateQuery, handler);
     }
 
@@ -55,8 +58,8 @@ public class MongoRepository {
         mongoClient.removeOne(AppConstants.TRACES, query, handler);
     }
 
-    public void list(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        mongoClient.find(AppConstants.TRACES, new JsonObject(), resultHandler);
+    public void list(JsonObject query, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        mongoClient.find(AppConstants.TRACES, query, resultHandler);
     }
 
 }

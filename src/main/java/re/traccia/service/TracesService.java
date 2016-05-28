@@ -4,10 +4,9 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
@@ -15,6 +14,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import re.traccia.model.Trace;
 import re.traccia.repository.MongoRepository;
+import re.traccia.utils.TraceUtils;
 
 import static re.traccia.management.AppConstants.TRACES_PATH;
 
@@ -65,28 +65,29 @@ public class TracesService extends AbstractVerticle {
     }
 
     private void create(RoutingContext routingContext) {
-        logger.info("CREATE: " + routingContext.getBodyAsString());
+        JsonObject jsonObject = routingContext.getBodyAsJson();
         Trace trace =
                 Json.decodeValue(routingContext.getBodyAsString(),
                         Trace.class);
-        FileSystem fs = vertx.fileSystem();
-        fs.writeFile("docs/auto_up.jpg", Buffer.buffer().appendBytes(trace.getImage()), result -> {
-            if (result.succeeded()) {
-                System.out.println("OK");
-            } else {
-                System.err.println("Oh oh ..." + result.cause());
-            }
-        });
-        mongoRepository.create(trace, single -> {
+        byte[] img = trace.getImage();
+        trace.setImage(null);
+        mongoRepository.create(trace.toJson(), single -> {
                     if (single.failed()) {
-                        end404(routingContext);
+                        end404(routingContext, single.cause().getMessage());
                         return;
                     }
-                    routingContext.response()
-                            .setStatusCode(201)
-                            .putHeader("content-type",
-                                    "application/json; charset=utf-8")
-                            .end(Json.encodePrettily(single.result()));
+                    logger.info("_id: " + single.result());
+                    mongoRepository.createImg(img, single.result(), image -> {
+                        if (image.failed()) {
+                            end404(routingContext, image.cause().getMessage());
+                            return;
+                        }
+                        routingContext.response()
+                                .setStatusCode(201)
+                                .putHeader("content-type",
+                                        "application/json; charset=utf-8")
+                                .end(Json.encodePrettily(single.result()));
+                    });
                 }
         );
 
@@ -95,12 +96,12 @@ public class TracesService extends AbstractVerticle {
     private void fetch(RoutingContext routingContext) {
         String id = routingContext.request().getParam("id");
         if (id == null) {
-            end404(routingContext);
+            end404(routingContext, "no id");
             return;
         }
         mongoRepository.fetch(id, result -> {
             if (result.failed()) {
-                end404(routingContext);
+                end404(routingContext, result.cause().getMessage());
                 return;
             }
             routingContext.response()
@@ -114,12 +115,12 @@ public class TracesService extends AbstractVerticle {
     private void getImage(RoutingContext routingContext) {
         String id = routingContext.request().getParam("id");
         if (id == null) {
-            end404(routingContext);
+            end404(routingContext, "no id");
             return;
         }
         mongoRepository.getImg(id, result -> {
             if (result.failed()) {
-                end404(routingContext);
+                end404(routingContext, result.cause().getMessage());
                 return;
             }
             routingContext.response()
@@ -132,16 +133,14 @@ public class TracesService extends AbstractVerticle {
 
     private void update(RoutingContext routingContext) {
         String id = routingContext.request().getParam("id");
-        Trace trace = Json.decodeValue(routingContext.getBodyAsString(),
-                Trace.class);
-        if (id == null || trace == null) {
-            end404(routingContext);
+        if (id == null) {
+            end404(routingContext, "no id");
             return;
         }
-        mongoRepository.update(id, trace,
+        mongoRepository.update(id, routingContext.getBodyAsJson(),
                 updated -> {
                     if (updated.failed()) {
-                        end404(routingContext);
+                        end404(routingContext, updated.cause().getMessage());
                         return;
                     }
                     routingContext.response()
@@ -155,13 +154,13 @@ public class TracesService extends AbstractVerticle {
     private void delete(RoutingContext routingContext) {
         String id = routingContext.request().getParam("id");
         if (id == null) {
-            end404(routingContext);
+            end404(routingContext, "no id");
             return;
         }
         mongoRepository.delete(id,
                 deleted -> {
                     if (deleted.failed()) {
-                        end404(routingContext);
+                        end404(routingContext, deleted.cause().getMessage());
                         return;
                     }
                     routingContext.response()
@@ -172,10 +171,10 @@ public class TracesService extends AbstractVerticle {
     }
 
     private void getList(RoutingContext routingContext) {
-        mongoRepository.list(
+        mongoRepository.list(new JsonObject(),
                 list -> {
                     if (list.failed()) {
-                        end404(routingContext);
+                        end404(routingContext, list.cause().getMessage());
                         return;
                     }
                     routingContext.response()
@@ -186,9 +185,10 @@ public class TracesService extends AbstractVerticle {
         );
     }
 
-    private void end404(RoutingContext routingContext) {
+    private void end404(RoutingContext routingContext, String msg) {
         routingContext.response()
-                .setStatusCode(404).setStatusMessage("ERROR CONTEXT: " + routingContext.getBodyAsString()).end();
+                .setStatusCode(404).setStatusMessage("ERROR CONTEXT: " + msg)
+                .end();
     }
 
 

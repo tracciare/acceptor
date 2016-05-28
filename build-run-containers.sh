@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_66.jdk/Contents/Home/
 tag=tracciare/acceptor:1.0-SNAPSHOT
 name=acceptor
 
@@ -13,7 +14,7 @@ function print_msg {
 }
 
 print_msg 'Building $name Vertx fat jar ...'
-mvn clean package
+mvn clean package -Dmaven.test.skip=true
 
 print_msg 'Building $name Docker image ...'
 docker-compose stop $name

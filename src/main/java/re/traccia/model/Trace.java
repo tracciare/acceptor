@@ -1,10 +1,11 @@
 package re.traccia.model;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Created by fiorenzo on 28/05/16.
  */
 public class Trace {
-    private String id;
     private String lat;
     private String lon;
     private byte[] image;
@@ -18,14 +19,6 @@ public class Trace {
         this.lon = lon;
         this.image = image;
         this.plateNumber = plateNumber;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getLat() {
@@ -58,5 +51,14 @@ public class Trace {
 
     public void setPlateNumber(String plateNumber) {
         this.plateNumber = plateNumber;
+    }
+
+    public JsonObject toJson() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject
+                .put("lat", this.getLat())
+                .put("lon", this.getLon())
+                .put("plateNumber", this.getPlateNumber());
+        return jsonObject;
     }
 }
