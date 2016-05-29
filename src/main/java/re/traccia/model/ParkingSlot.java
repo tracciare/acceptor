@@ -66,8 +66,8 @@ public class ParkingSlot {
         JsonObject jsonObject = new JsonObject();
         jsonObject
                 .put("plateNumber", this.getPlateNumber())
-                .put("startDate", this.getStartDate())
-                .put("endDate", this.getEndDate())
+                .put("startDate", new JsonObject().put("$date", this.getStartDate()))
+                .put("endDate", new JsonObject().put("$date", this.getEndDate()))
                 .put("userId", this.getUserId());
         return jsonObject;
     }

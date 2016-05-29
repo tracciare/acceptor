@@ -23,6 +23,7 @@ public class AppConstants {
     public static final String APP_CONTEST = "/api/";
     public static final String ALPR_PATH = APP_CONTEST + "alpr/";
     public static final String NOTIFICATIONS_PATH = APP_CONTEST + "notifications/";
+    public static final String PARKING_CHECKER_PATH = APP_CONTEST + "parkingchecker/";
     public static final String PARKING_SLOTS_PATH = APP_CONTEST + PARKINGSLOTS + "/";
     public static final String TRACES_PATH = APP_CONTEST + TRACES + "/";
     public static final String USERS_PATH = APP_CONTEST + USERS + "/";
@@ -35,6 +36,7 @@ public class AppConstants {
     //msg queues
     public static final String ALPR_QUEUE = "re.traccia.alpr";
     public static final String NOTIFICATION_QUEUE = "re.traccia.notifications";
+    public static final String PARKING_CHECKER_QUEUE = "re.traccia.parkingchecker";
     public static final String PARKINGSLOTS_QUEUE = "re.traccia.parkingslots";
     public static final String TRACES_QUEUE = "re.traccia.traces";
     public static final String USERS_QUEUE = "re.traccia.users";
