@@ -1,7 +1,3 @@
-# Traccia.RE Project #
+# Traccia.RE #
 
-Sistema di tracciamento di targhe auto. Primo prototipo.
-
-### one module
-* all inside
-
+Vehicles tracking system based on license plate recognition.
