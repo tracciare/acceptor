@@ -1,15 +1,14 @@
 # Traccia.RE - use cases#
 
 
-we receive a trace from our car controller (mobile) that contains a valid plate number.
-we need to verify:
+The system receives a trace from the mobile car controller and the trace contains a valid plate number.
 
- - if the plate number is associated to a valid parking slot (happy path)
-    - the query is: start_date >= now() <= end_date, plate_number = plate_number
-    - we send a notification to user to say "tank's to be honest and to remember him to close correctly the parking slot
- - if the parking slot doesn't exist, we try to find a valid user with this platenumber
-    - we try to find inside users collection
-    - if the user doesn't exist, we a send a notification to the police man that will go to phisically
-    notification (using the coordinates with the initial trace)
+ - if the plate number is associated to a valid parking slot (start_date >= now() <= end_date, plate_number = plate_number)
+    - nothing to do (happy path)
+ - if the parking slot doesn't exist, 
+    - search for a valid user with this platenumber
+        - if the user doesn't exist, we a send a notification to the police man that will go to physically (using the coordinates with the initial trace)
+        - if the user exists, send and email/sms notifcation to the user that he/she will be charged for the a default min payment  
+    
 
 
