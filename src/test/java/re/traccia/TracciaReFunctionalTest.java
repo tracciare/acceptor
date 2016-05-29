@@ -82,7 +82,7 @@ public class TracciaReFunctionalTest {
         byte[] data = Files.readAllBytes(path);
         Trace trace = new Trace("lat", "lon", data, null);
 
-        for(int i=0; i<NUMBER_OF_TESTS; i++) {
+        for (int i = 0; i < NUMBER_OF_TESTS; i++) {
             createProcessDelete(trace);
             System.out.println("Done " + i);
         }
@@ -98,15 +98,15 @@ public class TracciaReFunctionalTest {
         }
     }
 
-    public static String testCreateTrace(Trace trace) throws IOException{
+    public static String testCreateTrace(Trace trace) throws IOException {
         return given().
-                        contentType(ContentType.JSON).
-                        body(Json.encode(trace)).
-                        when().post(AppConstants.TRACES_PATH).
-                        then().assertThat()
-                        .statusCode(200).
+                contentType(ContentType.JSON).
+                body(Json.encode(trace)).
+                when().post(AppConstants.TRACES_PATH).
+                then().assertThat()
+                .statusCode(200).
                         extract()
-                        .path("_id");
+                .path("_id");
     }
 
     public static void testProcessAlpr(String newTraceId) {
@@ -127,5 +127,6 @@ public class TracciaReFunctionalTest {
                 then().assertThat().
                 statusCode(200);
     }
+
 
 }
