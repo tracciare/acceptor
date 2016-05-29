@@ -16,7 +16,7 @@ print_msg 'Building fat jar ...'
 mvn clean package -Dmaven.test.skip=true
 
 print_msg 'Building $name Docker image ...'
-docker-compose stop $name
+docker-compose kill $name
 yes | docker-compose rm
 docker-compose build $name
 

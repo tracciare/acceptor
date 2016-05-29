@@ -40,6 +40,7 @@ public class AlprService extends AbstractVerticle {
 
     private <T> void consume(Message<T> message) {
         logger.info("received msg: " + message.body());
+//        message.reply("ok:" + message.body());
         String id = (String) message.body();
         this.tracesRepository.fetch(id, result -> {
             if (result.succeeded()) {
@@ -97,14 +98,15 @@ public class AlprService extends AbstractVerticle {
                     //alpr.setDefaultRegion("md");
 
                     AlprResults results = alpr.recognize(tmpImage);
-                    for (AlprPlateResult single : results.getPlates()) {
-                        for (AlprPlate plate : single.getTopNPlates()) {
-                            if (plate.isMatchesTemplate())
-                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " * ");
-                            else
-                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " - ");
-                        }
-                    }
+                    logger.info(results.getJobj());
+//                    for (AlprPlateResult single : results.getPlates()) {
+//                        for (AlprPlate plate : single.getTopNPlates()) {
+//                            if (plate.isMatchesTemplate())
+//                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " * ");
+//                            else
+//                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " - ");
+//                        }
+//                    }
                     // Make sure to call this to release memory
                     fs.delete(tmpImage, delete -> {
                         if (delete.succeeded()) {

@@ -82,29 +82,56 @@ public class TracesService extends AbstractVerticle {
         JsonObject jsonObject = new JsonObject();
         Future<String> createTraceFuture = Future.future();
         Future<String> createImageFuture = Future.future();
+//        Future<String> createMessage = Future.future();
+        Future<Message<String>> end = Future.future();
+
         this.repository.create(trace.toJson(), createTraceFuture.completer());
+
         createTraceFuture.compose(traceId -> {
+            logger.info("trace created with id: " + traceId);
             jsonObject.put("traceId", traceId);
             ((TracesRepository) this.repository).createImage(img, traceId, createImageFuture.completer());
         }, createImageFuture);
+
         createImageFuture.compose(imageId -> {
+            logger.info("image created with id: " + jsonObject.getString("traceId"));
             jsonObject.put("imageId", imageId);
-            getVertx().eventBus().send(ALPR_QUEUE, jsonObject.getString("traceId"), ar -> {
-                logger.info("WE SENT MESSAGE!!!");
-            });
-        }, Future.succeededFuture());
-        createImageFuture.setHandler(result -> {
-            if (result.succeeded()) {
-                routingContext.response()
-                        .setStatusCode(200)
-                        .putHeader("content-type",
-                                "application/json; charset=utf-8")
-                        .end(Json.encodePrettily(new JsonObject().put("_id", jsonObject.getString("traceId"))));
-            } else {
-                end404(routingContext, createImageFuture.cause().getMessage());
+            getVertx().eventBus().publish(ALPR_QUEUE, jsonObject.getString("traceId"));
+            routingContext.response()
+                    .setStatusCode(200)
+                    .putHeader("content-type",
+                            "application/json; charset=utf-8")
+                    .end(Json.encodePrettily(new JsonObject().put("_id", jsonObject.getString("traceId"))));
+        }, end);
+
+        end.setHandler(result -> {
+            logger.info("msg not sent : " + result.succeeded());
+            if (!result.succeeded()) {
+                end404(routingContext, end.cause().getMessage());
                 return;
+            } else {
+                logger.info("exit");
             }
         });
+
+//        createImageFuture.compose(imageId -> {
+//            jsonObject.put("imageId", imageId);
+//            getVertx().eventBus().send(ALPR_QUEUE, jsonObject.getString("traceId"), ar -> {
+//                logger.info("WE SENT MESSAGE!!!");
+//            });
+//        }, Future.succeededFuture());
+//        createImageFuture.setHandler(result -> {
+//            if (result.succeeded()) {
+//                routingContext.response()
+//                        .setStatusCode(200)
+//                        .putHeader("content-type",
+//                                "application/json; charset=utf-8")
+//                        .end(Json.encodePrettily(new JsonObject().put("_id", jsonObject.getString("traceId"))));
+//            } else {
+//                end404(routingContext, createImageFuture.cause().getMessage());
+//                return;
+//            }
+//        });
     }
 
     private void fetch(RoutingContext routingContext) {

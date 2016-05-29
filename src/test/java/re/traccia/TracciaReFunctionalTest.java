@@ -76,7 +76,7 @@ public class TracciaReFunctionalTest {
 
     @Test
     public void stressTest() throws IOException {
-        final int NUMBER_OF_TESTS = 10;
+        final int NUMBER_OF_TESTS = 100;
 
         Path path = Paths.get(TEST_IMAGE);
         byte[] data = Files.readAllBytes(path);
