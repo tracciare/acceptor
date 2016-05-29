@@ -2,33 +2,35 @@ package re.traccia;
 
 import com.jayway.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import re.traccia.management.AppConstants;
 import re.traccia.model.Trace;
+import re.traccia.utils.FunctionalTestUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.jayway.restassured.RestAssured.given;
-
 
 @RunWith(VertxUnitRunner.class)
-public class TracciaReStressTest {
+public class TracciaReStressTest extends FunctionalTestUtils {
 
     public final static String HOST = TracciaReFunctionalTest.HOST;
     public final static int PORT = TracciaReFunctionalTest.PORT;
     public final static String TEST_IMAGE = TracciaReFunctionalTest.TEST_IMAGE;
 
-    final int REQUESTS_PER_THREAD = 3;
-    final int THREADS = 3;
+    final int REQUESTS_PER_THREAD = 50;
+    final int THREADS = 50;
 
     @BeforeClass
     public static void configureRestAssured() {
@@ -49,19 +51,24 @@ public class TracciaReStressTest {
 
     @Test
     public void sequentialStressTest() throws Exception {
-        sendSequentialRequests(REQUESTS_PER_THREAD);
+        List<String> createdTraces = sendSequentialRequests(REQUESTS_PER_THREAD);
+        //Thread.sleep(50);  //wait for ALPR processing to happen
+        for(String traceId: createdTraces){
+            Assert.assertEquals(AppConstants.PROCESSED, getTraceStatus(traceId));
+            deleteTrace(traceId);
+        }
     }
 
     /**
      * @return List of all trace ids processed
      */
     protected List<String> sendSequentialRequests(int numberRequests) throws Exception {
-        List<String> processedTraces = new ArrayList<>();
+        List<String> createdTraces = new ArrayList<>();
         for(int i=0; i < numberRequests; i++) {
-            processedTraces.add(TracciaReFunctionalTest.createProcessDelete(buildTrace()));
+            createdTraces.add(createTrace(buildTrace()));
             System.out.println("Done " + i);
         }
-        return processedTraces;
+        return createdTraces;
     }
 
     @Test
@@ -83,8 +90,12 @@ public class TracciaReStressTest {
                         throw new RuntimeException(e);
                     }
                 })
-                .forEach( processedTracesId -> {
-                    Assert.assertEquals(REQUESTS_PER_THREAD, processedTracesId.size());
+                .forEach( createdTracesId -> {
+                    Assert.assertEquals(REQUESTS_PER_THREAD, createdTracesId.size());
+                    for(String traceId: createdTracesId){
+                        Assert.assertEquals(AppConstants.PROCESSED, getTraceStatus(traceId));
+                        deleteTrace(traceId);
+                    }
                 });
     }
 

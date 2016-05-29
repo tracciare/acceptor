@@ -4,6 +4,8 @@ package re.traccia.management;
  * Created by fiorenzo on 28/05/16.
  */
 public class AppConstants {
+    //trace stautus
+    public static final String PROCESSED = "processed";
 
     // mongodb
     public static final int MONGO_PORT = 27017;

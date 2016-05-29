@@ -16,6 +16,9 @@ import re.traccia.model.Trace;
 import re.traccia.common.Repository;
 import re.traccia.repository.TracesRepository;
 
+import java.time.Instant;
+import java.util.Date;
+
 import static re.traccia.management.AppConstants.ALPR_QUEUE;
 import static re.traccia.management.AppConstants.TRACES_PATH;
 import static re.traccia.management.AppConstants.TRACES_QUEUE;
@@ -78,11 +81,12 @@ public class TracesService extends AbstractVerticle {
         Trace trace =
                 Json.decodeValue(routingContext.getBodyAsString(),
                         Trace.class);
+        trace.setStartDate(Instant.now());
+        trace.setStatus("ACCEPTED");
         byte[] img = trace.getImage();
         JsonObject jsonObject = new JsonObject();
         Future<String> createTraceFuture = Future.future();
         Future<String> createImageFuture = Future.future();
-//        Future<String> createMessage = Future.future();
         Future<Message<String>> end = Future.future();
 
         this.repository.create(trace.toJson(), createTraceFuture.completer());
