@@ -19,9 +19,7 @@ import re.traccia.repository.TracesRepository;
 import java.time.Instant;
 import java.util.Date;
 
-import static re.traccia.management.AppConstants.ALPR_QUEUE;
-import static re.traccia.management.AppConstants.TRACES_PATH;
-import static re.traccia.management.AppConstants.TRACES_QUEUE;
+import static re.traccia.management.AppConstants.*;
 
 
 public class TracesService extends AbstractVerticle {
@@ -82,7 +80,7 @@ public class TracesService extends AbstractVerticle {
                 Json.decodeValue(routingContext.getBodyAsString(),
                         Trace.class);
         trace.setStartDate(Instant.now());
-        trace.setStatus("ACCEPTED");
+        trace.setStatus(ACCEPTED);
         byte[] img = trace.getImage();
         JsonObject jsonObject = new JsonObject();
         Future<String> createTraceFuture = Future.future();

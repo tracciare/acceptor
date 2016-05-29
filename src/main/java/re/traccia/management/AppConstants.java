@@ -7,7 +7,8 @@ import io.vertx.ext.mail.StartTLSOptions;
  */
 public class AppConstants {
     //trace stautus
-    public static final String PROCESSED = "processed";
+    public static final String ACCEPTED = "PROCESSED";
+    public static final String PROCESSED = "PROCESSED";
 
     // mongodb
     public static final int MONGO_PORT = 27017;

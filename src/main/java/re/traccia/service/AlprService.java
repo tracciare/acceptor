@@ -54,7 +54,7 @@ public class AlprService extends AbstractVerticle {
                     if (decodeJson.succeeded()) {
                         traceObj.put("alpr", decodeJson.result());
                         traceObj.put("endDate", Instant.now());
-                        traceObj.put("status", AppConstants.PROCESSED);
+                        traceObj.put("status", PROCESSED);
                         tracesRepository.update(id, traceObj, updated -> {
                             logger.info("AlprService update trace successfully");
                         });
@@ -99,13 +99,21 @@ public class AlprService extends AbstractVerticle {
 
     private void decodeImage(String id, Handler<AsyncResult<JsonObject>> next) {
         tracesRepository.image(id, result -> {
-            JsonObject imgObj = result.result();
-            alpr.setTopN(5);
-            AlprResults results = alpr.recognize(imgObj.getBinary("img"));
-            for (AlprPlateResult plate : results.getPlates()) {
-                //TODO
+            if (result.succeeded()) {
+                JsonObject imgObj = result.result();
+                alpr.setTopN(5);
+                AlprResults results = alpr.recognize(imgObj.getBinary("img"));
+                for (AlprPlateResult plate : results.getPlates()) {
+                    //TODO: WE SHOULD UPDATE THE TRACE USING THE PLATE NUMBER. IF WE HAVE MORE RESULT THAN ONE,
+                    // WE SOULD CREATE MORE TRACES (LIKE THE INITIAL TRACE - LAT, LON, DATE
+                    logger.info("PLATENUMBER: " + plate.getBestPlate());
+                }
+                logger.info(results.getJsonObject());
+                next.handle(Future.succeededFuture());
+            } else {
+                next.handle(Future.failedFuture("no image found"));
             }
-            logger.info(results.getJsonObject());
+
         });
 
     }
