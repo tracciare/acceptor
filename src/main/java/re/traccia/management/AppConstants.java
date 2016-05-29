@@ -12,17 +12,18 @@ public class AppConstants {
     public static final int PORT = 8080;
 
     // mongodb collections
+    public static final String IMAGES = "images";
     public static final String PARKINGSLOTS = "parkingslots";
     public static final String TRACES = "traces";
     public static final String USERS = "users";
-    public static final String IMAGES = "images";
 
     //rest path
     public static final String APP_CONTEST = "/api/";
+    public static final String ALPR_PATH = APP_CONTEST + "alpr/";
+    public static final String NOTIFICATIONS_PATH = APP_CONTEST + "notifications/";
+    public static final String PARKING_SLOTS_PATH = APP_CONTEST + PARKINGSLOTS + "/";
     public static final String TRACES_PATH = APP_CONTEST + TRACES + "/";
     public static final String USERS_PATH = APP_CONTEST + USERS + "/";
-    public static final String PARKING_SLOTS_PATH = APP_CONTEST + PARKINGSLOTS + "/";
-    public static final String ALPR_PATH = APP_CONTEST + "alpr/";
 
 
     public static final String OPENALPR_CONF_PATH = "openalpr.conf";
@@ -31,6 +32,7 @@ public class AppConstants {
 
     //msg queues
     public static final String ALPR_QUEUE = "re.traccia.alpr";
+    public static final String NOTIFICATION_QUEUE = "re.traccia.notifications";
     public static final String PARKINGSLOTS_QUEUE = "re.traccia.parkingslots";
     public static final String TRACES_QUEUE = "re.traccia.traces";
     public static final String USERS_QUEUE = "re.traccia.users";
