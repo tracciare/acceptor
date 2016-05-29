@@ -74,21 +74,7 @@ public class TracciaReFunctionalTest {
         createProcessDelete(trace);
     }
 
-    @Test
-    public void stressTest() throws IOException {
-        final int NUMBER_OF_TESTS = 100;
-
-        Path path = Paths.get(TEST_IMAGE);
-        byte[] data = Files.readAllBytes(path);
-        Trace trace = new Trace("lat", "lon", data, null);
-
-        for(int i=0; i<NUMBER_OF_TESTS; i++) {
-            createProcessDelete(trace);
-            System.out.println("Done " + i);
-        }
-    }
-
-    public static void createProcessDelete(Trace trace) throws IOException {
+    public static String createProcessDelete(Trace trace) throws IOException {
         String newTraceId = null;
         try {
             newTraceId = testCreateTrace(trace);
@@ -96,6 +82,7 @@ public class TracciaReFunctionalTest {
         } finally {
             testDeleteTrace(newTraceId);
         }
+        return newTraceId;
     }
 
     public static String testCreateTrace(Trace trace) throws IOException{
