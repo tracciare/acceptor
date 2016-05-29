@@ -11,6 +11,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import re.traccia.model.ParkingSlot;
 import re.traccia.repository.ParkingSlotsRepository;
 import re.traccia.common.Repository;
 
@@ -71,8 +72,19 @@ public class ParkingSlotsService extends AbstractVerticle {
     }
 
     private void create(RoutingContext routingContext) {
-        JsonObject jsonObject = routingContext.getBodyAsJson();
-        this.repository.create(jsonObject, single -> {
+        ParkingSlot parkingSlot = null;
+        try {
+            parkingSlot =
+                    Json.decodeValue(routingContext.getBodyAsString(),
+                            ParkingSlot.class);
+        } catch (Exception e) {
+
+        }
+        if (parkingSlot == null) {
+            end404(routingContext, "parking slot not valid");
+            return;
+        }
+        this.repository.create(parkingSlot.toJson(), single -> {
             if (single.failed()) {
                 end404(routingContext, single.cause().getMessage());
                 return;

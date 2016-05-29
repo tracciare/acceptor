@@ -1,5 +1,7 @@
 package re.traccia.model;
 
+import io.vertx.core.json.JsonObject;
+
 import java.time.Instant;
 
 /**
@@ -58,5 +60,15 @@ public class ParkingSlot {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public JsonObject toJson() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject
+                .put("plateNumber", this.getPlateNumber())
+                .put("startDate", this.getStartDate())
+                .put("endDate", this.getEndDate())
+                .put("userId", this.getUserId());
+        return jsonObject;
     }
 }
