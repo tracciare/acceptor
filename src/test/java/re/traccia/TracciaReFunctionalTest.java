@@ -76,11 +76,13 @@ public class TracciaReFunctionalTest {
 
     @Test
     public void stressTest() throws IOException {
+        final int NUMBER_OF_TESTS = 10;
+
         Path path = Paths.get(TEST_IMAGE);
         byte[] data = Files.readAllBytes(path);
         Trace trace = new Trace("lat", "lon", data, null);
 
-        for(int i=0; i<100; i++) {
+        for(int i=0; i<NUMBER_OF_TESTS; i++) {
             createProcessDelete(trace);
             System.out.println("Done " + i);
         }
@@ -90,9 +92,9 @@ public class TracciaReFunctionalTest {
         String newTraceId = null;
         try {
             newTraceId = testCreateTrace(trace);
-            //testProcessAlpr(newTraceId);
+            testProcessAlpr(newTraceId);
         } finally {
-            //testDeleteTrace(newTraceId);
+            testDeleteTrace(newTraceId);
         }
     }
 
