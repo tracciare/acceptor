@@ -64,7 +64,8 @@ public class TracciaReFunctionalTest extends FunctionalTestUtils {
     public void createProcessDeleteSuccess() throws Exception {
         Path path = Paths.get(TEST_IMAGE);
         byte[] data = Files.readAllBytes(path);
-        Trace trace = new Trace("lat", "lon", data, null);
+        // -73.97, 40.77
+        Trace trace = new Trace("-73.97", "40.77", data, null);
 
         createProcessDelete(trace);
     }

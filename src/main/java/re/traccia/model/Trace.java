@@ -1,5 +1,6 @@
 package re.traccia.model;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
@@ -93,13 +94,21 @@ public class Trace {
 
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject
-                .put("lat", this.getLat())
-                .put("lon", this.getLon());
+//        jsonObject
+//                .put("lat", this.getLat())
+//                .put("lon", this.getLon());
         if (this.getStartDate() != null)
             jsonObject.put("startDate", new JsonObject().put("$date", this.getStartDate()));
         if (this.getEndDate() != null)
             jsonObject.put("endDate", new JsonObject().put("$date", this.getEndDate()));
+        if (lat != null && lon != null)
+            jsonObject
+                    .put("location", new JsonObject()
+                            .put("type", "Point")
+                            .put("coordinates", new JsonArray().add(new Double(lat)).add(new Double(lon))
+                            )
+                    );
+//        location : { type: "Point", coordinates: [ -73.97, 40.77 ] },
         jsonObject
                 .put("status", this.getStatus())
                 .put("plateNumber", this.getPlateNumber())
