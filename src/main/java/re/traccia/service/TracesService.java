@@ -92,7 +92,7 @@ public class TracesService extends AbstractVerticle {
             getVertx().eventBus().send(ALPR_QUEUE, jsonObject.getString("traceId"), ar -> {
                 logger.info("WE SENT MESSAGE!!!");
             });
-        }, createImageFuture);
+        }, Future.succeededFuture());
         createImageFuture.setHandler(result -> {
             if (result.succeeded()) {
                 routingContext.response()
