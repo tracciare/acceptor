@@ -73,7 +73,7 @@ public class TracciaReFunctionalTest extends FunctionalTestUtils {
         String newTraceId = null;
         try {
             newTraceId = createTrace(trace);
-            Thread.sleep(100);  //wait for ALPR processing to happen
+            Thread.sleep(10);  //wait for ALPR processing to happen
             String status = getTraceStatus(newTraceId);
             Assert.assertEquals(AppConstants.PROCESSED, status);
         } finally {
