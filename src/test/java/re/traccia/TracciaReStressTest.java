@@ -84,7 +84,7 @@ public class TracciaReStressTest {
                     }
                 })
                 .forEach( processedTracesId -> {
-                    System.out.println(processedTracesId);
+                    Assert.assertEquals(REQUESTS_PER_THREAD, processedTracesId.size());
                 });
     }
 
