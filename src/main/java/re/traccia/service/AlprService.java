@@ -1,7 +1,6 @@
 package re.traccia.service;
 
 import com.openalpr.jni.Alpr;
-import com.openalpr.jni.AlprPlate;
 import com.openalpr.jni.AlprPlateResult;
 import com.openalpr.jni.AlprResults;
 import io.vertx.core.*;
@@ -55,7 +54,7 @@ public class AlprService extends AbstractVerticle {
                     if (decodeJson.succeeded()) {
                         traceObj.put("alpr", decodeJson.result());
                         traceObj.put("endDate", Instant.now());
-                        traceObj.put("status", AppConstants.PROCESSED);
+                        traceObj.put("status", PROCESSED);
                         tracesRepository.update(id, traceObj, updated -> {
                             logger.info("AlprService update trace successfully");
                         });
@@ -99,29 +98,24 @@ public class AlprService extends AbstractVerticle {
     }
 
     private void decodeImage(String id, Handler<AsyncResult<JsonObject>> next) {
-        String tmpImage = "/tmp/" + id + ".jpg";
         tracesRepository.image(id, result -> {
-            JsonObject imgObj = result.result();
-            FileSystem fs = vertx.fileSystem();
-            fs.writeFile(tmpImage, Buffer.buffer().appendBytes(imgObj.getBinary("img")), fsResult -> {
-                if (fsResult.succeeded()) {
-                    alpr.setTopN(5);
-                    AlprResults results = alpr.recognize(tmpImage);
-                    logger.info(results.getJobj());
-                    // Make sure to call this to release memory
-                    fs.delete(tmpImage, delete -> {
-                        if (delete.succeeded()) {
-                            logger.info("OK deleted");
-                        } else
-                            logger.error(" NO DELETE - ");
-                    });
-                    next.handle(Future.succeededFuture(results.getJobj()));
-                } else {
-                    logger.error("Oh oh ..." + fsResult.cause());
-                    next.handle(Future.failedFuture("no image created"));
+            if (result.succeeded()) {
+                JsonObject imgObj = result.result();
+                alpr.setTopN(5);
+                AlprResults results = alpr.recognize(imgObj.getBinary("img"));
+                for (AlprPlateResult plate : results.getPlates()) {
+                    //TODO: WE SHOULD UPDATE THE TRACE USING THE PLATE NUMBER. IF WE HAVE MORE RESULT THAN ONE,
+                    // WE SOULD CREATE MORE TRACES (LIKE THE INITIAL TRACE - LAT, LON, DATE
+                    logger.info("PLATENUMBER: " + plate.getBestPlate());
                 }
-            });
+                logger.info(results.getJsonObject());
+                next.handle(Future.succeededFuture());
+            } else {
+                next.handle(Future.failedFuture("no image found"));
+            }
+
         });
+
     }
 
     private void decode(RoutingContext routingContext) {

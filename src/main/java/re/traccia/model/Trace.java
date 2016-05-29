@@ -95,9 +95,12 @@ public class Trace {
         JsonObject jsonObject = new JsonObject();
         jsonObject
                 .put("lat", this.getLat())
-                .put("lon", this.getLon())
-                .put("startDate", this.getStartDate())
-                .put("endDate", this.getEndDate())
+                .put("lon", this.getLon());
+        if (this.getStartDate() != null)
+            jsonObject.put("startDate", new JsonObject().put("$date", this.getStartDate()));
+        if (this.getEndDate() != null)
+            jsonObject.put("endDate", new JsonObject().put("$date", this.getEndDate()));
+        jsonObject
                 .put("status", this.getStatus())
                 .put("plateNumber", this.getPlateNumber())
                 .put("alpr", this.getAlpr());

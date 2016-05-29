@@ -7,10 +7,7 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import re.traccia.service.AlprService;
-import re.traccia.service.ParkingSlotsService;
-import re.traccia.service.TracesService;
-import re.traccia.service.UsersService;
+import re.traccia.service.*;
 
 import static re.traccia.management.AppConstants.*;
 
@@ -42,8 +39,12 @@ public class MainVerticle extends AbstractVerticle {
         ParkingSlotsService parkingSlotsService = new ParkingSlotsService(router, this.mongoClient, vertx);
         TracesService tracesService = new TracesService(router, this.mongoClient, vertx);
         UsersService usersService = new UsersService(router, this.mongoClient, vertx);
+        ParkingChecker parkingChecker = new ParkingChecker(router, this.mongoClient, vertx);
+
+        //it's a worker verticle (no async is guaranted)
         vertx.deployVerticle(alprService, new DeploymentOptions().setWorker(true));
 
+        vertx.deployVerticle(parkingChecker, new DeploymentOptions().setConfig(config()));
         vertx.deployVerticle(parkingSlotsService, new DeploymentOptions().setConfig(config()));
         vertx.deployVerticle(usersService, new DeploymentOptions().setConfig(config()));
         vertx.deployVerticle(tracesService, new DeploymentOptions().setConfig(config()));

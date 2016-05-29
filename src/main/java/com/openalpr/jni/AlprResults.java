@@ -16,25 +16,27 @@ public class AlprResults {
 
     private List<AlprRegionOfInterest> regionsOfInterest;
 
-    private JsonObject jobj;
+    private JsonObject jsonObject;
 
     AlprResults(String json) {
-        jobj = new JsonObject(json);
+        jsonObject = new JsonObject(json);
+        epoch_time = jsonObject.getLong("epoch_time");
+        img_width = jsonObject.getInteger("img_width");
+        img_height = jsonObject.getInteger("img_height");
+        total_processing_time_ms = (float) jsonObject.getDouble("processing_time_ms").floatValue();
 
-        epoch_time = jobj.getLong("epoch_time");
-        img_width = jobj.getInteger("img_width");
-        img_height = jobj.getInteger("img_height");
-        total_processing_time_ms = (float) jobj.getDouble("processing_time_ms").floatValue();
-
-        JsonArray resultsArray = jobj.getJsonArray("results");
+        JsonArray resultsArray = jsonObject.getJsonArray("results");
         plates = new ArrayList<AlprPlateResult>(resultsArray.size());
         for (int i = 0; i < resultsArray.size(); i++) {
             JsonObject plateObj = (JsonObject) resultsArray.getJsonObject(i);
             AlprPlateResult result = new AlprPlateResult(plateObj);
+            if (result.getBestPlate() != null) {
+
+            }
             plates.add(result);
         }
 
-        JsonArray roisArray = jobj.getJsonArray("regions_of_interest");
+        JsonArray roisArray = jsonObject.getJsonArray("regions_of_interest");
         regionsOfInterest = new ArrayList<AlprRegionOfInterest>(roisArray.size());
         for (int i = 0; i < roisArray.size(); i++) {
             JsonObject roiObj = (JsonObject) roisArray.getJsonObject(i);
@@ -67,11 +69,11 @@ public class AlprResults {
         return regionsOfInterest;
     }
 
-    public JsonObject getJobj() {
-        return jobj;
+    public JsonObject getJsonObject() {
+        return jsonObject;
     }
 
-    public void setJobj(JsonObject jobj) {
-        this.jobj = jobj;
+    public void setJsonObject(JsonObject jsonObject) {
+        this.jsonObject = jsonObject;
     }
 }
