@@ -79,37 +79,31 @@ public class TracesService extends AbstractVerticle {
                 Json.decodeValue(routingContext.getBodyAsString(),
                         Trace.class);
         byte[] img = trace.getImage();
-        this.repository.create(trace.toJson(), single -> {
-                    if (single.failed()) {
-                        end404(routingContext, single.cause().getMessage());
-                        return;
-                    }
-                    logger.info("_id: " + single.result());
-                    ((TracesRepository) this.repository).createImage(img, single.result(), created -> {
-                        if (created.failed()) {
-                            end404(routingContext, single.cause().getMessage());
-                            return;
-                        }
-                        getVertx().eventBus().send(ALPR_QUEUE,
-                                "" + single.result(), ar -> {
-                                    logger.info("WE SENT MESSAGE!!!");
-                                    if (ar.succeeded()) {
-                                        System.out.println("Received reply: " + ar.result().body());
-                                    } else {
-                                        if (ar.failed()) {
-                                            logger.info("ERROR: " + ar.cause());
-                                        }
-                                    }
-
-                                });
-                        routingContext.response()
-                                .setStatusCode(200)
-                                .putHeader("content-type",
-                                        "application/json; charset=utf-8")
-                                .end(Json.encodePrettily(new JsonObject().put("_id", single.result())));
-                    });
-                }
-        );
+        JsonObject jsonObject = new JsonObject();
+        Future<String> createTraceFuture = Future.future();
+        Future<String> createImageFuture = Future.future();
+        Future<String> sendMessageFuture = Future.future();
+        this.repository.create(trace.toJson(), createTraceFuture.completer());
+        createTraceFuture.compose(traceId -> {
+            jsonObject.put("traceId", traceId);
+            ((TracesRepository) this.repository).createImage(img, traceId, createImageFuture.completer());
+        }, createImageFuture);
+        createImageFuture.compose(imageId -> {
+            jsonObject.put("imageId", imageId);
+            getVertx().eventBus().send(ALPR_QUEUE, jsonObject.getString("traceId"), ar -> {
+                logger.info("WE SENT MESSAGE!!!");
+            });
+        }, sendMessageFuture);
+        if (sendMessageFuture.succeeded()) {
+            routingContext.response()
+                    .setStatusCode(200)
+                    .putHeader("content-type",
+                            "application/json; charset=utf-8")
+                    .end(Json.encodePrettily(new JsonObject().put("_id", sendMessageFuture.result())));
+        } else {
+            end404(routingContext, sendMessageFuture.cause().getMessage());
+            return;
+        }
 
     }
 
