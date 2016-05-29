@@ -1,9 +1,7 @@
 package re.traccia;
 
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -11,18 +9,15 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import re.traccia.management.AppConstants;
 import re.traccia.model.Trace;
+import re.traccia.utils.FunctionalTestUtils;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 
 @RunWith(VertxUnitRunner.class)
-public class TracciaReFunctionalTest {
+public class TracciaReFunctionalTest extends FunctionalTestUtils {
 
     public final static String HOST = "192.168.99.100"; // $(docker-machine ip)
     public final static int PORT = 8080;
@@ -66,7 +61,7 @@ public class TracciaReFunctionalTest {
     }
 
     @Test
-    public void createProcessDeleteSuccess() throws IOException {
+    public void createProcessDeleteSuccess() throws Exception {
         Path path = Paths.get(TEST_IMAGE);
         byte[] data = Files.readAllBytes(path);
         Trace trace = new Trace("lat", "lon", data, null);
@@ -74,59 +69,17 @@ public class TracciaReFunctionalTest {
         createProcessDelete(trace);
     }
 
-    @Test
-    public void stressTest() throws IOException {
-        final int NUMBER_OF_TESTS = 100;
-
-        Path path = Paths.get(TEST_IMAGE);
-        byte[] data = Files.readAllBytes(path);
-        Trace trace = new Trace("lat", "lon", data, null);
-
-        for (int i = 0; i < NUMBER_OF_TESTS; i++) {
-            createProcessDelete(trace);
-            System.out.println("Done " + i);
-        }
-    }
-
-    public static void createProcessDelete(Trace trace) throws IOException {
+    public static String createProcessDelete(Trace trace) throws Exception {
         String newTraceId = null;
         try {
-            newTraceId = testCreateTrace(trace);
-            testProcessAlpr(newTraceId);
+            newTraceId = createTrace(trace);
+            Thread.sleep(10);  //wait for ALPR processing to happen
+            String status = getTraceStatus(newTraceId);
+            Assert.assertEquals(AppConstants.PROCESSED, status);
         } finally {
-            testDeleteTrace(newTraceId);
+            deleteTrace(newTraceId);
         }
+        return newTraceId;
     }
-
-    public static String testCreateTrace(Trace trace) throws IOException {
-        return given().
-                contentType(ContentType.JSON).
-                body(Json.encode(trace)).
-                when().post(AppConstants.TRACES_PATH).
-                then().assertThat()
-                .statusCode(200).
-                        extract()
-                .path("_id");
-    }
-
-    public static void testProcessAlpr(String newTraceId) {
-        List results = given().
-                when().get(AppConstants.ALPR_PATH + newTraceId).
-                then().assertThat()
-                .statusCode(200).
-                        extract()
-                .body().jsonPath().getList("results");
-
-        Assert.assertTrue(results.size() > 0);
-    }
-
-    public static void testDeleteTrace(String newTraceId) {
-        given().
-                when().
-                delete(AppConstants.TRACES_PATH + newTraceId).
-                then().assertThat().
-                statusCode(200);
-    }
-
 
 }
