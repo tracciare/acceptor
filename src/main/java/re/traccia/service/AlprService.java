@@ -19,6 +19,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import re.traccia.repository.TracesRepository;
 
+import java.time.Instant;
+
 import static re.traccia.management.AppConstants.*;
 
 
@@ -28,6 +30,9 @@ public class AlprService extends AbstractVerticle {
     private TracesRepository tracesRepository;
     private Router router;
     private Alpr alpr;
+
+    public AlprService() {
+    }
 
     public AlprService(Router router, MongoClient mongoClient, Vertx vertx) {
         this.router = router;
@@ -40,20 +45,31 @@ public class AlprService extends AbstractVerticle {
 
     private <T> void consume(Message<T> message) {
         logger.info("received msg: " + message.body());
-//        message.reply("ok:" + message.body());
         String id = (String) message.body();
         this.tracesRepository.fetch(id, result -> {
             if (result.succeeded()) {
-                logger.info(result.result());
+                JsonObject traceObj = result.result();
+                logger.info("found traceObj:" + traceObj);
+                decodeImage(id, decodeJson -> {
+                    if (decodeJson.succeeded()) {
+                        traceObj.put("alpr", decodeJson.result());
+                        traceObj.put("endDate", Instant.now());
+                        traceObj.put("status", "processed");
+                        tracesRepository.update(id, traceObj, updated -> {
+                            logger.info("AlprService update trace successfully");
+                        });
+                    } else {
+                        logger.info("AlprService deconding with unsuccess");
+                    }
+
+                });
             } else {
-                logger.info("error - fecth trace: " + result.cause().getMessage());
+                logger.info("error in fecthing trace: " + result.cause().getMessage());
             }
 
         });
     }
 
-    public AlprService() {
-    }
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -81,13 +97,7 @@ public class AlprService extends AbstractVerticle {
         next.handle(Future.succeededFuture());
     }
 
-
-    private void decode(RoutingContext routingContext) {
-        String id = routingContext.request().getParam("id");
-        if (id == null) {
-            end404(routingContext, "no id");
-            return;
-        }
+    private void decodeImage(String id, Handler<AsyncResult<JsonObject>> next) {
         String tmpImage = "/tmp/" + id + ".jpg";
         tracesRepository.image(id, result -> {
             JsonObject imgObj = result.result();
@@ -95,18 +105,8 @@ public class AlprService extends AbstractVerticle {
             fs.writeFile(tmpImage, Buffer.buffer().appendBytes(imgObj.getBinary("img")), fsResult -> {
                 if (fsResult.succeeded()) {
                     alpr.setTopN(5);
-                    //alpr.setDefaultRegion("md");
-
                     AlprResults results = alpr.recognize(tmpImage);
                     logger.info(results.getJobj());
-//                    for (AlprPlateResult single : results.getPlates()) {
-//                        for (AlprPlate plate : single.getTopNPlates()) {
-//                            if (plate.isMatchesTemplate())
-//                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " * ");
-//                            else
-//                                logger.info(plate.getCharacters() + ":" + plate.getOverallConfidence() + " - ");
-//                        }
-//                    }
                     // Make sure to call this to release memory
                     fs.delete(tmpImage, delete -> {
                         if (delete.succeeded()) {
@@ -114,18 +114,33 @@ public class AlprService extends AbstractVerticle {
                         } else
                             logger.error(" NO DELETE - ");
                     });
-                    routingContext.response()
-                            .setStatusCode(200)
-                            .putHeader("content-type",
-                                    "application/json; charset=utf-8")
-                            .end(Json.encodePrettily(results.getJobj()));
+                    next.handle(Future.succeededFuture(results.getJobj()));
                 } else {
                     logger.error("Oh oh ..." + fsResult.cause());
+                    next.handle(Future.failedFuture("no image created"));
                 }
             });
         });
+    }
 
-
+    private void decode(RoutingContext routingContext) {
+        String id = routingContext.request().getParam("id");
+        if (id == null) {
+            end404(routingContext, "no id");
+            return;
+        }
+        decodeImage(id, start -> {
+            if (start.succeeded()) {
+                routingContext.response()
+                        .setStatusCode(200)
+                        .putHeader("content-type",
+                                "application/json; charset=utf-8")
+                        .end(Json.encodePrettily(start.result()));
+            } else {
+                logger.info("error in decoding image: " + start.cause().getMessage());
+                end404(routingContext, start.cause().getMessage());
+            }
+        });
     }
 
     @Override

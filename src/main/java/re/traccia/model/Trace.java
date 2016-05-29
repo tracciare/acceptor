@@ -2,6 +2,8 @@ package re.traccia.model;
 
 import io.vertx.core.json.JsonObject;
 
+import java.time.Instant;
+
 /**
  * Created by fiorenzo on 28/05/16.
  */
@@ -10,6 +12,10 @@ public class Trace {
     private String lon;
     private byte[] image;
     private String plateNumber;
+    private Instant startDate;
+    private Instant endDate;
+    private String status;
+    private JsonObject alpr;
 
     public Trace() {
     }
@@ -53,12 +59,48 @@ public class Trace {
         this.plateNumber = plateNumber;
     }
 
+    public Instant getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
+    }
+
+    public Instant getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public JsonObject getAlpr() {
+        return alpr;
+    }
+
+    public void setAlpr(JsonObject alpr) {
+        this.alpr = alpr;
+    }
+
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject
                 .put("lat", this.getLat())
                 .put("lon", this.getLon())
-                .put("plateNumber", this.getPlateNumber());
+                .put("startDate", this.getStartDate())
+                .put("endDate", this.getEndDate())
+                .put("status", this.getStatus())
+                .put("plateNumber", this.getPlateNumber())
+                .put("alpr", this.getAlpr());
         return jsonObject;
     }
 }
