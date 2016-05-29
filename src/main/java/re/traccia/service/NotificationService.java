@@ -4,6 +4,7 @@ import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -16,8 +17,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import re.traccia.repository.UsersRepository;
 
-import static re.traccia.management.AppConstants.NOTIFICATIONS_PATH;
-import static re.traccia.management.AppConstants.NOTIFICATION_QUEUE;
+import static re.traccia.management.AppConstants.*;
 
 /**
  * Created by fiorenzo on 29/05/16.
@@ -82,24 +82,25 @@ public class NotificationService extends AbstractVerticle
         JsonObject jsonObject = routingContext.getBodyAsJson();
 
         MailClient mailClient = MailClient.createNonShared(vertx, getMailConfig());
-
-
         mailClient.sendMail(getMailMessage(jsonObject), result -> {
             if (result.succeeded()) {
                 logger.info(result.result());
+                routingContext.response()
+                        .setStatusCode(200)
+                        .putHeader("content-type",
+                                "application/json; charset=utf-8")
+                        .end(Json.encodePrettily(result.result()));
             } else {
                 result.cause().printStackTrace();
+                end404(routingContext, "error in notification");
             }
         });
     }
 
     private MailMessage getMailMessage(JsonObject jsonObject) {
         MailMessage mailMessage = new MailMessage();
-//        mailMessage.setFrom("user@example.com (Example User)");
         mailMessage.setFrom(jsonObject.getString("from"));
-//        mailMessage.setTo("recipient@example.org");
         mailMessage.setTo(jsonObject.getString("to"));
-//        mailMessage.setCc("Another User <another@example.net>");
         mailMessage.setCc(jsonObject.getString("cc"));
         mailMessage.setSubject(jsonObject.getString("subject"));
         mailMessage.setText(jsonObject.getString("text"));
@@ -108,11 +109,11 @@ public class NotificationService extends AbstractVerticle
 
     private MailConfig getMailConfig() {
         MailConfig mailConfig = new MailConfig();
-        mailConfig.setHostname("mail.example.com");
-        mailConfig.setPort(587);
-        mailConfig.setStarttls(StartTLSOptions.REQUIRED);
-        mailConfig.setUsername("user");
-        mailConfig.setPassword("password");
+        mailConfig.setHostname(MAIL_HOSTNAME);
+        mailConfig.setPort(MAIL_PORT);
+        mailConfig.setStarttls(MAIL_STARTTLS);
+        mailConfig.setUsername(MAIL_USERNAME);
+        mailConfig.setPassword(MAIL_PASSWORD);
         return mailConfig;
     }
 

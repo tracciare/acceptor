@@ -1,7 +1,6 @@
 package re.traccia.service;
 
 import com.openalpr.jni.Alpr;
-import com.openalpr.jni.AlprPlate;
 import com.openalpr.jni.AlprPlateResult;
 import com.openalpr.jni.AlprResults;
 import io.vertx.core.*;
@@ -99,29 +98,16 @@ public class AlprService extends AbstractVerticle {
     }
 
     private void decodeImage(String id, Handler<AsyncResult<JsonObject>> next) {
-        String tmpImage = "/tmp/" + id + ".jpg";
         tracesRepository.image(id, result -> {
             JsonObject imgObj = result.result();
-            FileSystem fs = vertx.fileSystem();
-            fs.writeFile(tmpImage, Buffer.buffer().appendBytes(imgObj.getBinary("img")), fsResult -> {
-                if (fsResult.succeeded()) {
-                    alpr.setTopN(5);
-                    AlprResults results = alpr.recognize(tmpImage);
-                    logger.info(results.getJobj());
-                    // Make sure to call this to release memory
-                    fs.delete(tmpImage, delete -> {
-                        if (delete.succeeded()) {
-                            logger.info("OK deleted");
-                        } else
-                            logger.error(" NO DELETE - ");
-                    });
-                    next.handle(Future.succeededFuture(results.getJobj()));
-                } else {
-                    logger.error("Oh oh ..." + fsResult.cause());
-                    next.handle(Future.failedFuture("no image created"));
-                }
-            });
+            alpr.setTopN(5);
+            AlprResults results = alpr.recognize(imgObj.getBinary("img"));
+            for (AlprPlateResult plate : results.getPlates()) {
+                //TODO
+            }
+            logger.info(results.getJsonObject());
         });
+
     }
 
     private void decode(RoutingContext routingContext) {

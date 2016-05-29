@@ -1,5 +1,7 @@
 package re.traccia.management;
 
+import io.vertx.ext.mail.StartTLSOptions;
+
 /**
  * Created by fiorenzo on 28/05/16.
  */
@@ -40,5 +42,18 @@ public class AppConstants {
     public static final String PARKINGSLOTS_QUEUE = "re.traccia.parkingslots";
     public static final String TRACES_QUEUE = "re.traccia.traces";
     public static final String USERS_QUEUE = "re.traccia.users";
+
+
+    // system email (for notifications)
+    public static final String SYSTEM_EMAIL_FROM = "info@traccia.re";
+    public static final String SYSTEM_EMAIL_CONTROLLER_TO = "fiorenzino@gmail.com";
+    public static final String SYSTEM_EMAIL_CONTROLLER_CC = "fabio.cognigni@gmail.com";
+
+    //mail smtp server
+    public static final String MAIL_HOSTNAME = "smtp.gmail.com";
+    public static final int MAIL_PORT = 587;
+    public static final StartTLSOptions MAIL_STARTTLS = StartTLSOptions.REQUIRED;
+    public static final String MAIL_USERNAME = "xxx@gmail.com";
+    public static final String MAIL_PASSWORD = "xxx";
 
 }
