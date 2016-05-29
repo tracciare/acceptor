@@ -17,6 +17,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import re.traccia.management.AppConstants;
 import re.traccia.repository.TracesRepository;
 
 import java.time.Instant;
@@ -54,7 +55,7 @@ public class AlprService extends AbstractVerticle {
                     if (decodeJson.succeeded()) {
                         traceObj.put("alpr", decodeJson.result());
                         traceObj.put("endDate", Instant.now());
-                        traceObj.put("status", "processed");
+                        traceObj.put("status", AppConstants.PROCESSED);
                         tracesRepository.update(id, traceObj, updated -> {
                             logger.info("AlprService update trace successfully");
                         });
