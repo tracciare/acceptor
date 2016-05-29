@@ -93,11 +93,8 @@ public class AlprService extends AbstractVerticle {
             FileSystem fs = vertx.fileSystem();
             fs.writeFile(tmpImage, Buffer.buffer().appendBytes(imgObj.getBinary("img")), fsResult -> {
                 if (fsResult.succeeded()) {
-                    logger.info("OK");
-                    // Set top N candidates returned to 20
                     alpr.setTopN(5);
-                    // Set pattern to Maryland
-                    //        alpr.setDefaultRegion("md");
+                    //alpr.setDefaultRegion("md");
 
                     AlprResults results = alpr.recognize(tmpImage);
                     for (AlprPlateResult single : results.getPlates()) {
@@ -116,7 +113,7 @@ public class AlprService extends AbstractVerticle {
                             logger.error(" NO DELETE - ");
                     });
                     routingContext.response()
-                            .setStatusCode(201)
+                            .setStatusCode(200)
                             .putHeader("content-type",
                                     "application/json; charset=utf-8")
                             .end(Json.encodePrettily(results.getJobj()));

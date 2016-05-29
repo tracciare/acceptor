@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static com.jayway.restassured.RestAssured.given;
 
@@ -70,7 +71,7 @@ public class TracciaReFunctionalTest {
         Path path = Paths.get(TEST_IMAGE);
         byte[] data = Files.readAllBytes(path);
         Trace trace = new Trace("lat", "lon", data, null);
-        String id =
+        String newTraceId =
             given().
                     contentType(ContentType.JSON).
                     body(Json.encode(trace)).
@@ -81,12 +82,19 @@ public class TracciaReFunctionalTest {
                     .path("_id");
 
         //process alpr
-        //TODO
+        List results = given().
+        when().get(AppConstants.ALPR_PATH + newTraceId).
+        then().assertThat()
+                .statusCode(200).
+        extract()
+                .body().jsonPath().getList("results");
+
+        Assert.assertTrue(results.size() > 0);
 
         //clean
         given().
         when().
-            delete(AppConstants.TRACES_PATH + id).
+            delete(AppConstants.TRACES_PATH + newTraceId).
         then().assertThat().
             statusCode(200);
     }
