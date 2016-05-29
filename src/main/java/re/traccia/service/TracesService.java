@@ -82,7 +82,6 @@ public class TracesService extends AbstractVerticle {
         JsonObject jsonObject = new JsonObject();
         Future<String> createTraceFuture = Future.future();
         Future<String> createImageFuture = Future.future();
-        Future<String> sendMessageFuture = Future.future();
         this.repository.create(trace.toJson(), createTraceFuture.completer());
         createTraceFuture.compose(traceId -> {
             jsonObject.put("traceId", traceId);
@@ -93,18 +92,19 @@ public class TracesService extends AbstractVerticle {
             getVertx().eventBus().send(ALPR_QUEUE, jsonObject.getString("traceId"), ar -> {
                 logger.info("WE SENT MESSAGE!!!");
             });
-        }, sendMessageFuture);
-        if (sendMessageFuture.succeeded()) {
-            routingContext.response()
-                    .setStatusCode(200)
-                    .putHeader("content-type",
-                            "application/json; charset=utf-8")
-                    .end(Json.encodePrettily(new JsonObject().put("_id", sendMessageFuture.result())));
-        } else {
-            end404(routingContext, sendMessageFuture.cause().getMessage());
-            return;
-        }
-
+        }, createImageFuture);
+        createImageFuture.setHandler(result -> {
+            if (result.succeeded()) {
+                routingContext.response()
+                        .setStatusCode(200)
+                        .putHeader("content-type",
+                                "application/json; charset=utf-8")
+                        .end(Json.encodePrettily(new JsonObject().put("_id", jsonObject.getString("traceId"))));
+            } else {
+                end404(routingContext, createImageFuture.cause().getMessage());
+                return;
+            }
+        });
     }
 
     private void fetch(RoutingContext routingContext) {
