@@ -66,37 +66,64 @@ public class TracciaReFunctionalTest {
     }
 
     @Test
-    public void testEnd2End() throws IOException {
-        //create trace
+    public void createProcessDeleteSuccess() throws IOException {
         Path path = Paths.get(TEST_IMAGE);
         byte[] data = Files.readAllBytes(path);
         Trace trace = new Trace("lat", "lon", data, null);
-        String newTraceId =
-            given().
-                    contentType(ContentType.JSON).
-                    body(Json.encode(trace)).
-            when().post(AppConstants.TRACES_PATH).
-            then().assertThat()
-                    .statusCode(200).
-            extract()
-                    .path("_id");
 
-        //process alpr
+        createProcessDelete(trace);
+    }
+
+    @Test
+    public void stressTest() throws IOException {
+        Path path = Paths.get(TEST_IMAGE);
+        byte[] data = Files.readAllBytes(path);
+        Trace trace = new Trace("lat", "lon", data, null);
+
+        for(int i=0; i<100; i++) {
+            createProcessDelete(trace);
+            System.out.println("Done " + i);
+        }
+    }
+
+    public static void createProcessDelete(Trace trace) throws IOException {
+        String newTraceId = null;
+        try {
+            newTraceId = testCreateTrace(trace);
+            //testProcessAlpr(newTraceId);
+        } finally {
+            //testDeleteTrace(newTraceId);
+        }
+    }
+
+    public static String testCreateTrace(Trace trace) throws IOException{
+        return given().
+                        contentType(ContentType.JSON).
+                        body(Json.encode(trace)).
+                        when().post(AppConstants.TRACES_PATH).
+                        then().assertThat()
+                        .statusCode(200).
+                        extract()
+                        .path("_id");
+    }
+
+    public static void testProcessAlpr(String newTraceId) {
         List results = given().
-        when().get(AppConstants.ALPR_PATH + newTraceId).
-        then().assertThat()
+                when().get(AppConstants.ALPR_PATH + newTraceId).
+                then().assertThat()
                 .statusCode(200).
-        extract()
+                        extract()
                 .body().jsonPath().getList("results");
 
         Assert.assertTrue(results.size() > 0);
+    }
 
-        //clean
+    public static void testDeleteTrace(String newTraceId) {
         given().
-        when().
-            delete(AppConstants.TRACES_PATH + newTraceId).
-        then().assertThat().
-            statusCode(200);
+                when().
+                delete(AppConstants.TRACES_PATH + newTraceId).
+                then().assertThat().
+                statusCode(200);
     }
 
 }
