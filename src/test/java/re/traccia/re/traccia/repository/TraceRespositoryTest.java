@@ -39,7 +39,7 @@ public class TraceRespositoryTest {
         trace.setEndDate(Instant.now());
 
         repo.create(trace.toJson(), result -> {
-            repo.delete(result.result(), resultDel -> {});
+            //repo.delete(result.result(), resultDel -> {});
             async.complete();
         });
     }
