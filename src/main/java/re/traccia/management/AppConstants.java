@@ -28,6 +28,7 @@ public class AppConstants {
     public static final String NOTIFICATIONS_PATH = APP_CONTEST + "notifications/";
     public static final String PARKING_CHECKER_PATH = APP_CONTEST + "parkingchecker/";
     public static final String PARKING_SLOTS_PATH = APP_CONTEST + PARKINGSLOTS + "/";
+    public static final String SERVICE_TEST_PATH = APP_CONTEST + "servicetest/";
     public static final String TRACES_PATH = APP_CONTEST + TRACES + "/";
     public static final String USERS_PATH = APP_CONTEST + USERS + "/";
 
